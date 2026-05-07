@@ -15,6 +15,55 @@ type Order = {
 }
 type Category = { id: string; name: string; slug: string }
 
+const S = {
+  page: { minHeight: '100vh', background: '#fbe9e3', color: '#3a2828', fontFamily: "'Inter Tight', -apple-system, sans-serif", fontSize: '15px', lineHeight: 1.5 } as React.CSSProperties,
+  bg: { position: 'fixed', inset: 0, zIndex: -1, background: 'radial-gradient(1200px 800px at 80% -10%,#fcd9cc 0%,transparent 60%),radial-gradient(1000px 700px at -10% 110%,#f3c8be 0%,transparent 55%),#fbe9e3' } as React.CSSProperties,
+  container: { maxWidth: '1100px', margin: '0 auto', padding: '36px 24px 80px' } as React.CSSProperties,
+
+  topbar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 36px', background: 'rgba(251,233,227,0.75)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(58,40,40,0.06)', position: 'sticky', top: 0, zIndex: 50 } as React.CSSProperties,
+  brand: { fontFamily: "'Cormorant Garamond', serif", fontSize: '24px', fontStyle: 'italic', color: '#3a2828', textDecoration: 'none' } as React.CSSProperties,
+  brandTag: { fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#5a4040', opacity: 0.7, marginLeft: '12px' } as React.CSSProperties,
+  backLink: { color: '#3a2828', textDecoration: 'none', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', borderRadius: '999px', border: '1px solid rgba(58,40,40,0.15)', transition: 'all .25s' } as React.CSSProperties,
+
+  pageTitle: { fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: 'clamp(40px,5vw,64px)', lineHeight: 1, letterSpacing: '-0.02em', marginBottom: '8px' } as React.CSSProperties,
+  pageMeta: { fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.6, marginBottom: '40px' } as React.CSSProperties,
+
+  tabs: { display: 'flex', gap: '8px', marginBottom: '32px', borderBottom: '1px solid rgba(58,40,40,0.12)' } as React.CSSProperties,
+  tab: { background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', color: '#5a4040', padding: '12px 20px', borderRadius: '999px 999px 0 0', transition: 'all .25s' } as React.CSSProperties,
+  tabActive: { background: '#3a2828', color: '#fff7f3' } as React.CSSProperties,
+  tabBadge: { fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', marginLeft: '8px', padding: '2px 6px', borderRadius: '999px', background: '#c98e88', color: '#fff7f3' } as React.CSSProperties,
+
+  btnPrimary: { display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 22px', borderRadius: '999px', background: '#3a2828', color: '#fff7f3', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '13px', letterSpacing: '0.04em', transition: 'all .3s' } as React.CSSProperties,
+  btnGhost: { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 18px', borderRadius: '999px', background: 'transparent', color: '#3a2828', border: '1px solid rgba(58,40,40,0.2)', cursor: 'pointer', fontFamily: 'inherit', fontSize: '13px', transition: 'all .25s' } as React.CSSProperties,
+
+  card: { background: 'rgba(255,247,243,0.6)', border: '1px solid rgba(58,40,40,0.08)', borderRadius: '14px', overflow: 'hidden', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' } as React.CSSProperties,
+  row: { display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 20px', borderBottom: '1px solid rgba(58,40,40,0.06)', transition: 'background .2s' } as React.CSSProperties,
+  rowName: { fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', fontWeight: 400, marginBottom: '2px' } as React.CSSProperties,
+  rowMeta: { fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', letterSpacing: '0.06em', color: '#5a4040', opacity: 0.7, textTransform: 'uppercase' } as React.CSSProperties,
+
+  pillStock: { fontSize: '10px', fontFamily: "'JetBrains Mono', monospace", padding: '4px 10px', borderRadius: '999px', letterSpacing: '0.08em', textTransform: 'uppercase', border: '1px solid', whiteSpace: 'nowrap' } as React.CSSProperties,
+  pillIn: { background: 'rgba(186, 230, 175, 0.3)', borderColor: 'rgba(72, 130, 60, 0.3)', color: '#3d6b32' } as React.CSSProperties,
+  pillOut: { background: 'rgba(232, 180, 166, 0.3)', borderColor: 'rgba(201, 142, 136, 0.4)', color: '#7a3a36' } as React.CSSProperties,
+
+  empty: { textAlign: 'center', padding: '64px 24px', color: '#5a4040', opacity: 0.7 } as React.CSSProperties,
+  emptyTitle: { fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '28px', marginBottom: '8px', opacity: 0.85 } as React.CSSProperties,
+
+  loginWrap: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' } as React.CSSProperties,
+  loginCard: { width: '100%', maxWidth: '380px', background: 'rgba(255,247,243,0.7)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(58,40,40,0.08)', borderRadius: '20px', padding: '48px 36px', boxShadow: '0 30px 60px -20px rgba(58,40,40,0.15)' } as React.CSSProperties,
+  loginBrand: { textAlign: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: '34px', fontStyle: 'italic', fontWeight: 300, marginBottom: '4px' } as React.CSSProperties,
+  loginSub: { textAlign: 'center', fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#5a4040', opacity: 0.7, marginBottom: '36px' } as React.CSSProperties,
+
+  input: { width: '100%', border: '1px solid rgba(58,40,40,0.15)', background: 'rgba(255,247,243,0.5)', padding: '12px 16px', fontSize: '14px', borderRadius: '10px', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit', color: '#3a2828' } as React.CSSProperties,
+  label: { fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#5a4040', display: 'block', marginBottom: '8px', opacity: 0.8 } as React.CSSProperties,
+
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(58,40,40,0.45)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '16px' } as React.CSSProperties,
+  modal: { background: '#fdf2ee', width: '100%', maxWidth: '560px', maxHeight: '92vh', overflowY: 'auto', borderRadius: '20px', padding: '36px', boxShadow: '0 40px 80px -20px rgba(58,40,40,0.3)' } as React.CSSProperties,
+  modalTitle: { fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: '32px', fontStyle: 'italic', marginBottom: '28px', color: '#3a2828' } as React.CSSProperties,
+
+  price: { fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', fontWeight: 500 } as React.CSSProperties,
+  priceOld: { fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', textDecoration: 'line-through', color: '#5a4040', opacity: 0.5, marginRight: '8px' } as React.CSSProperties,
+}
+
 export default function AdminPage() {
   const [mounted, setMounted] = useState(false)
   const [authed, setAuthed] = useState(false)
@@ -65,7 +114,7 @@ export default function AdminPage() {
       setProducts(p || [])
       setOrders(o || [])
       setCategories(c || [])
-    } catch(err) { console.error(err) }
+    } catch (err) { console.error(err) }
     setLoading(false)
   }
 
@@ -125,89 +174,157 @@ export default function AdminPage() {
 
   if (!authed) {
     return (
-      <div style={{ minHeight:'100vh', background:'#faf8f5', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'sans-serif' }}>
-        <form onSubmit={handleLogin} style={{ background:'white', padding:'40px', border:'1px solid #e7e5e4', width:'320px' }}>
-          <h1 style={{ textAlign:'center', marginBottom:'24px', fontWeight:300, fontSize:'22px' }}>
-            Annabelle Arto<br/><span style={{ fontSize:'16px', color:'#b45309' }}>Панель управления</span>
-          </h1>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Пароль"
-            style={{ width:'100%', border:'1px solid #e7e5e4', padding:'10px 12px', fontSize:'13px', marginBottom:'12px', boxSizing:'border-box', outline:'none' }} />
-          <button type="submit" style={{ width:'100%', background:'#1c1917', color:'white', border:'none', padding:'12px', fontSize:'12px', letterSpacing:'2px', textTransform:'uppercase', cursor:'pointer' }}>
-            Войти
-          </button>
-        </form>
+      <div style={S.page}>
+        <div style={S.bg} />
+        <div style={S.loginWrap}>
+          <form onSubmit={handleLogin} style={S.loginCard}>
+            <h1 style={S.loginBrand}>
+              Annabelle <span style={{ color: '#c98e88' }}>Arto</span>
+            </h1>
+            <p style={S.loginSub}>✶ Панель управления ✶</p>
+            <label style={S.label}>Пароль</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••"
+              style={{ ...S.input, marginBottom: '20px' }}
+              autoFocus
+            />
+            <button type="submit" style={{ ...S.btnPrimary, width: '100%', justifyContent: 'center', padding: '14px' }}>
+              Войти
+            </button>
+          </form>
+        </div>
       </div>
     )
   }
 
+  const newOrdersCount = orders.filter(o => o.status === 'pending').length
+
   return (
-    <div style={{ minHeight:'100vh', background:'#faf8f5', fontFamily:'sans-serif' }}>
-      {/* Шапка */}
-      <div style={{ background:'#1c1917', color:'white', padding:'14px 32px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-        <span style={{ fontSize:'15px', letterSpacing:'1px' }}>Annabelle Arto · Админ</span>
-        <div style={{ display:'flex', gap:'24px', alignItems:'center' }}>
-          <button onClick={() => setTab('products')} style={{ background:'none', border:'none', color: tab==='products' ? '#fbbf24' : '#a8a29e', cursor:'pointer', fontSize:'12px', letterSpacing:'2px', textTransform:'uppercase' }}>
-            Товары ({products.length})
-          </button>
-          <button onClick={() => setTab('orders')} style={{ background:'none', border:'none', color: tab==='orders' ? '#fbbf24' : '#a8a29e', cursor:'pointer', fontSize:'12px', letterSpacing:'2px', textTransform:'uppercase' }}>
-            Заказы ({orders.filter(o => o.status === 'pending').length} новых)
-          </button>
-          <a href="/" style={{ color:'#a8a29e', textDecoration:'none', fontSize:'12px' }}>← Сайт</a>
-        </div>
+    <div style={S.page}>
+      <div style={S.bg} />
+
+      <div style={S.topbar}>
+        <a href="/admin" style={S.brand}>
+          Annabelle <b style={{ fontStyle: 'normal', fontWeight: 500 }}>Arto</b>
+          <span style={S.brandTag}>· Admin</span>
+        </a>
+        <a href="/" style={S.backLink}>← На сайт</a>
       </div>
 
-      <div style={{ maxWidth:'900px', margin:'0 auto', padding:'32px' }}>
-        {/* Товары */}
+      <div style={S.container}>
+        <h1 style={S.pageTitle}>
+          Панель <span style={{ fontStyle: 'italic', color: '#c98e88' }}>управления</span>
+        </h1>
+        <p style={S.pageMeta}>✶ {products.length} товаров · {orders.length} заказов</p>
+
+        <div style={S.tabs}>
+          <button
+            onClick={() => setTab('products')}
+            style={{ ...S.tab, ...(tab === 'products' ? S.tabActive : {}) }}
+          >
+            Товары
+          </button>
+          <button
+            onClick={() => setTab('orders')}
+            style={{ ...S.tab, ...(tab === 'orders' ? S.tabActive : {}) }}
+          >
+            Заказы
+            {newOrdersCount > 0 && <span style={S.tabBadge}>{newOrdersCount}</span>}
+          </button>
+        </div>
+
         {tab === 'products' && (
           <div>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
-              <h2 style={{ fontWeight:300, fontSize:'22px', margin:0 }}>Товары</h2>
-              <button onClick={openAddForm} style={{ background:'#b45309', color:'white', border:'none', padding:'10px 20px', fontSize:'12px', letterSpacing:'2px', textTransform:'uppercase', cursor:'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.6 }}>
+                Каталог
+              </p>
+              <button onClick={openAddForm} style={S.btnPrimary}>
                 + Добавить товар
               </button>
             </div>
-            <div style={{ background:'white', border:'1px solid #e7e5e4' }}>
-              {loading && <p style={{ textAlign:'center', padding:'32px', color:'#a8a29e' }}>Загрузка...</p>}
-              {!loading && products.length === 0 && <p style={{ textAlign:'center', padding:'40px', color:'#a8a29e' }}>Товаров пока нет. Добавьте первый!</p>}
+
+            <div style={S.card}>
+              {loading && <div style={S.empty}><p>Загрузка...</p></div>}
+              {!loading && products.length === 0 && (
+                <div style={S.empty}>
+                  <p style={S.emptyTitle}>Пусто, как чистый лист</p>
+                  <p style={{ fontSize: '13px' }}>Добавьте первый товар, чтобы начать.</p>
+                </div>
+              )}
               {products.map(p => (
-                <div key={p.id} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderBottom:'1px solid #f5f5f4' }}>
-                  <div style={{ flex:1 }}>
-                    <p style={{ margin:'0 0 4px', fontSize:'14px', fontWeight:500 }}>{p.name}</p>
-                    <p style={{ margin:0, fontSize:'11px', color:'#a8a29e' }}>
-                      {p.categories?.name || 'Без категории'} · {formatPrice(p.price)}
-                      {p.is_new && ' · Новинка'}{p.is_featured && ' · Хит'}
+                <div key={p.id} style={S.row}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={S.rowName}>{p.name}</p>
+                    <p style={S.rowMeta}>
+                      {p.categories?.name || 'Без категории'}
+                      {p.is_new && ' · Новинка'}
+                      {p.is_featured && ' · Хит'}
                     </p>
                   </div>
-                  <span style={{ fontSize:'10px', padding:'2px 8px', background: p.in_stock ? '#dcfce7' : '#fee2e2', color: p.in_stock ? '#166534' : '#991b1b' }}>
+                  <div style={{ textAlign: 'right' }}>
+                    {p.price_old && <span style={S.priceOld}>{formatPrice(p.price_old)}</span>}
+                    <span style={S.price}>{formatPrice(p.price)}</span>
+                  </div>
+                  <span style={{ ...S.pillStock, ...(p.in_stock ? S.pillIn : S.pillOut) }}>
                     {p.in_stock ? 'В наличии' : 'Нет'}
                   </span>
-                  <button onClick={() => openEditForm(p)} style={{ background:'none', border:'none', color:'#b45309', cursor:'pointer', fontSize:'12px' }}>Изменить</button>
-                  <button onClick={() => handleDelete(p.id)} style={{ background:'none', border:'none', color:'#ef4444', cursor:'pointer', fontSize:'12px' }}>Удалить</button>
+                  <button onClick={() => openEditForm(p)} style={{ ...S.btnGhost, padding: '8px 14px', fontSize: '12px' }}>
+                    Изменить
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p.id)}
+                    style={{ background: 'transparent', border: 'none', color: '#c98e88', cursor: 'pointer', fontSize: '16px', padding: '8px', fontFamily: 'inherit', lineHeight: 1 }}
+                    title="Удалить"
+                  >
+                    ✕
+                  </button>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Заказы */}
         {tab === 'orders' && (
           <div>
-            <h2 style={{ fontWeight:300, fontSize:'22px', marginBottom:'20px' }}>Заказы</h2>
-            <div style={{ background:'white', border:'1px solid #e7e5e4' }}>
-              {!loading && orders.length === 0 && <p style={{ textAlign:'center', padding:'40px', color:'#a8a29e' }}>Заказов пока нет</p>}
+            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.6, marginBottom: '20px' }}>
+              История заказов
+            </p>
+            <div style={S.card}>
+              {!loading && orders.length === 0 && (
+                <div style={S.empty}>
+                  <p style={S.emptyTitle}>Пока тихо</p>
+                  <p style={{ fontSize: '13px' }}>Заказы появятся здесь.</p>
+                </div>
+              )}
               {orders.map(o => (
-                <div key={o.id} style={{ padding:'14px 16px', borderBottom:'1px solid #f5f5f4' }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'4px' }}>
-                    <span style={{ fontSize:'14px', fontWeight:500 }}>Заказ #{o.order_number} · {new Date(o.created_at).toLocaleDateString('ru-KZ')}</span>
-                    <div style={{ display:'flex', gap:'12px', alignItems:'center' }}>
-                      <span style={{ fontSize:'16px' }}>{formatPrice(o.total_amount)}</span>
-                      <select value={o.status} onChange={e => updateOrderStatus(o.id, e.target.value)}
-                        style={{ fontSize:'12px', border:'1px solid #e7e5e4', padding:'4px 8px', background:'white', outline:'none' }}>
-                        {Object.entries(ORDER_STATUSES).map(([val, label]) => <option key={val} value={val}>{label}</option>)}
+                <div key={o.id} style={{ ...S.row, flexDirection: 'column', alignItems: 'stretch', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                    <div>
+                      <p style={S.rowName}>Заказ №{o.order_number}</p>
+                      <p style={S.rowMeta}>
+                        {o.customer_name} · {o.customer_phone} · {o.city}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                      <span style={S.price}>{formatPrice(o.total_amount)}</span>
+                      <select
+                        value={o.status}
+                        onChange={e => updateOrderStatus(o.id, e.target.value)}
+                        style={{ ...S.input, width: 'auto', padding: '8px 14px', fontSize: '12px', borderRadius: '999px', cursor: 'pointer' }}
+                      >
+                        {Object.entries(ORDER_STATUSES).map(([val, label]) => (
+                          <option key={val} value={val}>{label}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
-                  <p style={{ margin:0, fontSize:'12px', color:'#a8a29e' }}>{o.customer_name} · {o.customer_phone} · {o.city}</p>
+                  <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', opacity: 0.5, letterSpacing: '0.08em' }}>
+                    {new Date(o.created_at).toLocaleDateString('ru-KZ', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
                 </div>
               ))}
             </div>
@@ -215,72 +332,115 @@ export default function AdminPage() {
         )}
       </div>
 
-      {/* Модалка добавления/редактирования */}
       {showForm && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:50, padding:'16px' }}
-          onClick={e => e.target === e.currentTarget && setShowForm(false)}>
-          <div style={{ background:'white', width:'100%', maxWidth:'480px', maxHeight:'90vh', overflowY:'auto', padding:'24px' }}>
-            <h2 style={{ fontWeight:300, fontSize:'20px', marginBottom:'20px' }}>{editProduct ? 'Изменить товар' : 'Новый товар'}</h2>
-            <form onSubmit={handleSave} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
-              {[
-                { label:'Название *', key:'name', required:true },
-              ].map(f => (
-                <div key={f.key}>
-                  <label style={{ fontSize:'11px', color:'#78716c', display:'block', marginBottom:'4px' }}>{f.label}</label>
-                  <input value={(form as any)[f.key]} onChange={e => setForm(p => ({...p, [f.key]: e.target.value}))} required={f.required}
-                    style={{ width:'100%', border:'1px solid #e7e5e4', padding:'8px 12px', fontSize:'13px', boxSizing:'border-box', outline:'none' }} />
-                </div>
-              ))}
+        <div style={S.overlay} onClick={e => e.target === e.currentTarget && setShowForm(false)}>
+          <div style={S.modal}>
+            <h2 style={S.modalTitle}>
+              {editProduct ? 'Редактировать товар' : 'Новый товар'}
+            </h2>
+            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div>
-                <label style={{ fontSize:'11px', color:'#78716c', display:'block', marginBottom:'4px' }}>Описание</label>
-                <textarea value={form.description} onChange={e => setForm(p => ({...p, description: e.target.value}))} rows={3}
-                  style={{ width:'100%', border:'1px solid #e7e5e4', padding:'8px 12px', fontSize:'13px', boxSizing:'border-box', outline:'none', resize:'none' }} />
+                <label style={S.label}>Название</label>
+                <input
+                  value={form.name}
+                  onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                  required
+                  style={S.input}
+                />
               </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
-                <div>
-                  <label style={{ fontSize:'11px', color:'#78716c', display:'block', marginBottom:'4px' }}>Цена (₸) *</label>
-                  <input type="number" value={form.price} onChange={e => setForm(p => ({...p, price: e.target.value}))} required
-                    style={{ width:'100%', border:'1px solid #e7e5e4', padding:'8px 12px', fontSize:'13px', boxSizing:'border-box', outline:'none' }} />
-                </div>
-                <div>
-                  <label style={{ fontSize:'11px', color:'#78716c', display:'block', marginBottom:'4px' }}>Старая цена (₸)</label>
-                  <input type="number" value={form.price_old} onChange={e => setForm(p => ({...p, price_old: e.target.value}))}
-                    style={{ width:'100%', border:'1px solid #e7e5e4', padding:'8px 12px', fontSize:'13px', boxSizing:'border-box', outline:'none' }} />
-                </div>
-              </div>
+
               <div>
-                <label style={{ fontSize:'11px', color:'#78716c', display:'block', marginBottom:'4px' }}>Категория</label>
-                <select value={form.category_id} onChange={e => setForm(p => ({...p, category_id: e.target.value}))}
-                  style={{ width:'100%', border:'1px solid #e7e5e4', padding:'8px 12px', fontSize:'13px', background:'white', outline:'none' }}>
+                <label style={S.label}>Описание</label>
+                <textarea
+                  value={form.description}
+                  onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+                  rows={3}
+                  style={{ ...S.input, resize: 'vertical', minHeight: '80px' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div>
+                  <label style={S.label}>Цена, ₸</label>
+                  <input
+                    type="number"
+                    value={form.price}
+                    onChange={e => setForm(p => ({ ...p, price: e.target.value }))}
+                    required
+                    style={S.input}
+                  />
+                </div>
+                <div>
+                  <label style={S.label}>Старая цена, ₸</label>
+                  <input
+                    type="number"
+                    value={form.price_old}
+                    onChange={e => setForm(p => ({ ...p, price_old: e.target.value }))}
+                    style={S.input}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={S.label}>Категория</label>
+                <select
+                  value={form.category_id}
+                  onChange={e => setForm(p => ({ ...p, category_id: e.target.value }))}
+                  style={S.input}
+                >
                   <option value="">Без категории</option>
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
+
               <div>
-                <label style={{ fontSize:'11px', color:'#78716c', display:'block', marginBottom:'4px' }}>Размеры (через запятую)</label>
-                <input value={form.sizes} onChange={e => setForm(p => ({...p, sizes: e.target.value}))} placeholder="XS,S,M,L,XL"
-                  style={{ width:'100%', border:'1px solid #e7e5e4', padding:'8px 12px', fontSize:'13px', boxSizing:'border-box', outline:'none' }} />
+                <label style={S.label}>Размеры (через запятую)</label>
+                <input
+                  value={form.sizes}
+                  onChange={e => setForm(p => ({ ...p, sizes: e.target.value }))}
+                  placeholder="XS,S,M,L,XL"
+                  style={S.input}
+                />
               </div>
+
               <div>
-                <label style={{ fontSize:'11px', color:'#78716c', display:'block', marginBottom:'4px' }}>Ссылки на фото (каждая с новой строки)</label>
-                <textarea value={form.images} onChange={e => setForm(p => ({...p, images: e.target.value}))} rows={3} placeholder="https://..."
-                  style={{ width:'100%', border:'1px solid #e7e5e4', padding:'8px 12px', fontSize:'13px', boxSizing:'border-box', outline:'none', resize:'none' }} />
+                <label style={S.label}>Ссылки на фото · по одной в строке</label>
+                <textarea
+                  value={form.images}
+                  onChange={e => setForm(p => ({ ...p, images: e.target.value }))}
+                  rows={3}
+                  placeholder="https://..."
+                  style={{ ...S.input, resize: 'vertical', fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}
+                />
               </div>
-              <div style={{ display:'flex', gap:'16px', fontSize:'13px' }}>
-                {[['is_new','Новинка'],['is_featured','Хит продаж'],['in_stock','В наличии']].map(([key,label]) => (
-                  <label key={key} style={{ display:'flex', alignItems:'center', gap:'6px', cursor:'pointer' }}>
-                    <input type="checkbox" checked={(form as any)[key]} onChange={e => setForm(p => ({...p, [key]: e.target.checked}))} />
+
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', padding: '8px 0' }}>
+                {([['is_new', 'Новинка'], ['is_featured', 'Хит продаж'], ['in_stock', 'В наличии']] as const).map(([key, label]) => (
+                  <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#3a2828' }}>
+                    <input
+                      type="checkbox"
+                      checked={(form as any)[key]}
+                      onChange={e => setForm(p => ({ ...p, [key]: e.target.checked }))}
+                      style={{ accentColor: '#c98e88', width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
                     {label}
                   </label>
                 ))}
               </div>
-              <div style={{ display:'flex', gap:'12px', marginTop:'8px' }}>
-                <button type="submit" disabled={loading}
-                  style={{ flex:1, background:'#1c1917', color:'white', border:'none', padding:'12px', fontSize:'12px', letterSpacing:'2px', textTransform:'uppercase', cursor:'pointer', opacity: loading ? 0.5 : 1 }}>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{ ...S.btnPrimary, flex: 1, justifyContent: 'center', padding: '14px', opacity: loading ? 0.5 : 1 }}
+                >
                   {loading ? 'Сохраняем...' : 'Сохранить'}
                 </button>
-                <button type="button" onClick={() => setShowForm(false)}
-                  style={{ padding:'12px 20px', border:'1px solid #e7e5e4', background:'white', fontSize:'12px', cursor:'pointer', textTransform:'uppercase', letterSpacing:'1px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  style={S.btnGhost}
+                >
                   Отмена
                 </button>
               </div>
