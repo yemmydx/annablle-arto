@@ -1,0 +1,292 @@
+'use client'
+import { useState } from 'react'
+import Link from 'next/link'
+import { Product } from '@/lib/supabase'
+import { formatPrice } from '@/lib/utils'
+import { useCart } from '@/lib/cart'
+import QuickView from './QuickView'
+import CartDrawer from './CartDrawer'
+
+const CARD_BG = [
+  'linear-gradient(165deg,#f3c8be,#d99c8e)',
+  'linear-gradient(165deg,#ead0c4,#d4a094)',
+  'linear-gradient(165deg,#f5d8d0,#d8a89c)',
+  'linear-gradient(165deg,#e8c4b6,#c8907e)',
+  'linear-gradient(165deg,#f0c8be,#d8907e)',
+]
+
+const CATS = [
+  { name: 'Бельё', sub: 'комплекты', slug: 'komplekty', bg: 'linear-gradient(165deg,#f3c8be 0%,#d99c8e 100%)' },
+  { name: 'Пижамы', sub: 'домашняя', slug: 'pijamy', bg: 'linear-gradient(165deg,#e8b4a6 0%,#c98e88 100%)', italic: true },
+  { name: 'Боди', sub: 'корсеты', slug: 'body', bg: 'linear-gradient(165deg,#f5d4ca 0%,#e8b4a6 100%)' },
+  { name: 'Халаты', sub: 'уют', slug: 'halaty', bg: 'linear-gradient(165deg,#ead0c4 0%,#d4a094 100%)', italic: true },
+  { name: 'Трусики', sub: 'базовые', slug: 'trusiki', bg: 'linear-gradient(165deg,#d9a594 0%,#b8786a 100%)' },
+]
+
+const PROMISE = [
+  { icon: '🚚', title: 'Бесплатная доставка', sub: 'от 15 000 ₸' },
+  { icon: '↩️', title: 'Лёгкий обмен', sub: '30 дней' },
+  { icon: '💳', title: 'Kaspi Pay', sub: 'Halyk · Visa · MC' },
+  { icon: '✦', title: 'Размеры XS–3XL', sub: 'для всех' },
+]
+
+function ArrowUR() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M7 17 17 7M9 7h8v8"/></svg>
+}
+
+function ProductCard({ p, idx, onQuick }: { p: Product; idx: number; onQuick: () => void }) {
+  const { addItem } = useCart()
+  const [hovered, setHovered] = useState(false)
+  const gi = idx % 5
+
+  return (
+    <div className="card" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+      <div className="card-img" style={{ background: CARD_BG[gi] }} onClick={() => window.location.href = `/product/${p.slug}`}>
+        <div className="ph"><div className="ph-label">[ {(p.categories as any)?.name || ''} · {p.name} ]</div></div>
+        <div className="card-img-hover" style={{ background: 'linear-gradient(135deg,#d4a094,#b8786a)' }} />
+        {p.is_new && <span className="card-tag">Новинка</span>}
+        {p.price_old && !p.is_new && <span className="card-tag">−{Math.round((1 - p.price / p.price_old) * 100)}%</span>}
+        <div className="card-quick">
+          <button className="card-quick-btn" onClick={e => { e.stopPropagation(); onQuick() }}>Быстрый просмотр</button>
+        </div>
+      </div>
+      <div className="card-info">
+        <div>
+          <h4>{p.name}</h4>
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', opacity: 0.6, marginTop: 2 }}>
+            {(p.categories as any)?.name || ''}
+          </div>
+        </div>
+        <div className="card-price">
+          {p.price_old && <s>{formatPrice(p.price_old)}</s>}
+          {formatPrice(p.price)}
+        </div>
+      </div>
+      {p.product_variants && p.product_variants.length > 0 && (
+        <div className="card-sizes">
+          {[...new Set(p.product_variants.map(v => v.size))].slice(0, 5).map(s => (
+            <span key={s} className="size-chip">{s}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function HomeClient({ featured, newProducts }: { featured: Product[]; newProducts: Product[] }) {
+  const [quickProduct, setQuickProduct] = useState<Product | null>(null)
+  const [cartOpen, setCartOpen] = useState(false)
+
+  return (
+    <>
+      {/* ===== HERO ===== */}
+      <div className="hero">
+        <div className="hero-grid">
+          {/* Главная большая карточка */}
+          <div className="hero-img">
+            <div className="ph"><div className="ph-label">[ campaign · коллекция 2025 ]</div></div>
+            <div className="hero-overlay">
+              <div className="hero-meta">
+                <span className="hero-tag">Annabelle Arto ✿ Капсула 01 — 2025</span>
+                <span className="hero-tag">N°01 / 48</span>
+              </div>
+              <div>
+                <h1 className="hero-title">
+                  Мягкие <em>вещи,</em><br />нежные <em>намерения</em>
+                </h1>
+                <div className="hero-bottom">
+                  <Link href="/catalog" className="hero-cta">
+                    В коллекцию
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  </Link>
+                  <span className="hero-tag" style={{ maxWidth: 260, textAlign: 'right', lineHeight: 1.6, opacity: 0.85 }}>
+                    Капсула из 48 силуэтов.<br />Натуральные ткани, мягкие посадки.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Правые карточки */}
+          <div className="hero-side">
+            <div className="hero-card" style={{ background: 'linear-gradient(160deg,#d4a094 0%,#8a5448 100%)' }}>
+              <div className="ph"><div className="ph-label">[ editorial 01 · still life ]</div></div>
+              <div className="hero-card-mini">
+                <span className="hero-tag" style={{ color: 'rgba(255,247,243,0.7)' }}>Editorial 01</span>
+                <div>
+                  <h3>Сделано<br /><em>для тебя</em><br />каждый день</h3>
+                  <Link href="/about" className="hero-cta" style={{ marginTop: 14, fontSize: 12, padding: '10px 18px' }}>
+                    О бренде <ArrowUR />
+                  </Link>
+                </div>
+              </div>
+            </div>
+            <div className="hero-card" style={{ background: 'linear-gradient(160deg,#f0c8be 0%,#c98e88 100%)' }}>
+              <div className="ph"><div className="ph-label">[ new · сезон 2025 ]</div></div>
+              <div className="hero-card-mini">
+                <span className="hero-tag" style={{ color: 'rgba(58,40,40,0.6)' }}>Новинки ✿ 2025</span>
+                <div>
+                  <h3 style={{ color: 'var(--ink)' }}>Новинки<br /><em>сезона</em></h3>
+                  <Link href="/catalog?new=true" className="hero-cta" style={{ marginTop: 14, fontSize: 12, padding: '10px 18px', background: 'var(--ink)', color: 'var(--cream)' }}>
+                    Смотреть <ArrowUR />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== КАТЕГОРИИ ===== */}
+      <section>
+        <div className="section-head">
+          <h2>Категории, <em>выбери своё</em></h2>
+          <span className="section-meta">5 категорий ✿ 48 моделей</span>
+        </div>
+        <div className="cats">
+          {CATS.map((cat, i) => (
+            <Link key={cat.slug} href={`/catalog?category=${cat.slug}`} style={{ textDecoration: 'none' }}>
+              <div className="cat" style={{ background: cat.bg }}>
+                <div className="ph"><div className="ph-label">[ {cat.sub} ]</div></div>
+                <div className="cat-label">
+                  <h3>{cat.italic ? <em>{cat.name}</em> : cat.name}</h3>
+                  <div className="cat-arrow"><ArrowUR /></div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ===== БЕСТСЕЛЛЕРЫ ===== */}
+      {featured.length > 0 && (
+        <section>
+          <div className="section-head">
+            <h2>Бестселлеры, <em>нежно любимы</em></h2>
+            <span className="section-meta">Хиты сезона</span>
+          </div>
+          <div className="product-grid">
+            {featured.map((p, i) => (
+              <ProductCard key={p.id} p={p} idx={i} onQuick={() => setQuickProduct(p)} />
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 48 }}>
+            <Link href="/catalog?featured=true" className="btn btn-ghost">
+              Смотреть все хиты
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* ===== PROMISE ===== */}
+      <div className="promise">
+        {PROMISE.map(p => (
+          <div key={p.title}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>{p.icon}</div>
+            <h5>{p.title}</h5>
+            <p>{p.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ===== ЛУКБУК ПРЕВЬЮ ===== */}
+      <section>
+        <div className="section-head">
+          <h2>О бренде — <em>Annabelle Arto</em></h2>
+          <Link href="/about" className="btn btn-ghost" style={{ fontSize: 13, padding: '10px 20px' }}>
+            Читать историю <ArrowUR />
+          </Link>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, height: 560 }}>
+          {/* Большая карточка слева */}
+          <div style={{ borderRadius: 14, overflow: 'hidden', background: 'linear-gradient(135deg,#d4a094,#8a5448)', position: 'relative', cursor: 'pointer' }}
+            onClick={() => window.location.href = '/about'}>
+            <div className="ph"><div className="ph-label">[ brand story · annabelle arto ]</div></div>
+            <div style={{ position: 'absolute', inset: 0, padding: 36, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', color: 'var(--cream)' }}>
+              <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.8, marginBottom: 12 }}>— Манифест</span>
+              <h2 style={{ fontFamily: 'Cormorant Garamond,serif', fontWeight: 300, fontSize: 48, lineHeight: 1, marginBottom: 16 }}>
+                Annabelle Arto —<br /><em style={{ fontStyle: 'italic' }}>это про тебя</em>
+              </h2>
+              <p style={{ fontSize: 14, opacity: 0.8, lineHeight: 1.6, maxWidth: 360, marginBottom: 24 }}>
+                Бельё, в котором не хочется снимать. Свободные посадки, мягкие посадки, ткани которые ведут себя по-человечески.
+              </p>
+              <Link href="/about" className="hero-cta" style={{ width: 'fit-content' }}>
+                О нас <ArrowUR />
+              </Link>
+            </div>
+          </div>
+
+          {/* Правая колонка 2×2 */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 14 }}>
+            {[
+              { bg: 'linear-gradient(165deg,#f5d4ca,#d4a094)', label: 'Утро', num: '01' },
+              { bg: 'linear-gradient(165deg,#e8b4a6,#c98e88)', label: 'Шёлк', num: '02' },
+              { bg: 'linear-gradient(165deg,#f0c8be,#c98e88)', label: 'Кружево', num: '03' },
+              { bg: 'linear-gradient(165deg,#ead0c4,#a87864)', label: 'Закат', num: '04' },
+            ].map((item, i) => (
+              <div key={i} style={{ borderRadius: 12, overflow: 'hidden', background: item.bg, position: 'relative', cursor: 'pointer' }}
+                onClick={() => window.location.href = '/about'}>
+                <div className="ph"><div className="ph-label">[ frame {item.num} ]</div></div>
+                <div style={{ position: 'absolute', bottom: 14, left: 16, right: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', color: 'var(--cream)' }}>
+                  <h4 style={{ fontFamily: 'Cormorant Garamond,serif', fontWeight: 300, fontStyle: 'italic', fontSize: 22, lineHeight: 1 }}>{item.label}</h4>
+                  <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, letterSpacing: '0.14em', opacity: 0.8 }}>N°{item.num}/04</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== НОВИНКИ ===== */}
+      {newProducts.length > 0 && (
+        <section>
+          <div className="section-head">
+            <h2>Новинки, <em>свежее</em></h2>
+            <Link href="/catalog?new=true" className="btn btn-ghost" style={{ fontSize: 13, padding: '10px 20px' }}>
+              Все новинки →
+            </Link>
+          </div>
+          <div className="product-grid">
+            {newProducts.map((p, i) => (
+              <ProductCard key={p.id} p={p} idx={i + 2} onQuick={() => setQuickProduct(p)} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ===== EDITORIAL ===== */}
+      <section>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, alignItems: 'stretch' }}>
+          <div style={{ borderRadius: 14, overflow: 'hidden', background: 'linear-gradient(135deg,#d4a094,#8a5448)', position: 'relative', aspectRatio: '4/5' }}>
+            <div className="ph"><div className="ph-label">[ campaign · brand story ]</div></div>
+          </div>
+          <div style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24 }}>
+            <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--rose-deep)' }}>— Манифест</span>
+            <h2 style={{ fontFamily: 'Cormorant Garamond,serif', fontWeight: 300, fontSize: 'clamp(36px,4vw,56px)', lineHeight: 1, letterSpacing: '-0.01em' }}>
+              Annabelle Arto —<br /><em style={{ fontStyle: 'italic' }}>это про тебя</em>
+            </h2>
+            <p style={{ color: 'var(--ink-soft)', fontSize: 15, maxWidth: 460, lineHeight: 1.8 }}>
+              Бельё, в котором не хочется снимать. Свободные посадки, мягкие чашки без косточек, ткани, которые ведут себя по-человечески. Никаких обещаний про идеал — только удобство.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24, borderTop: '1px solid rgba(58,40,40,0.12)', paddingTop: 24 }}>
+              {[['48', 'моделей XS–3XL'], ['30', 'дней возврат'], ['16', 'городов KZ']].map(([n, l]) => (
+                <div key={n}>
+                  <div style={{ fontFamily: 'Cormorant Garamond,serif', fontWeight: 300, fontSize: 36, lineHeight: 1 }}>{n}</div>
+                  <div style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 4 }}>{l}</div>
+                </div>
+              ))}
+            </div>
+            <Link href="/about" className="btn" style={{ width: 'fit-content' }}>
+              О нас
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {quickProduct && <QuickView product={quickProduct} onClose={() => setQuickProduct(null)} onCartOpen={() => setCartOpen(true)} />}
+      {cartOpen && <CartDrawer onClose={() => setCartOpen(false)} />}
+    </>
+  )
+}
