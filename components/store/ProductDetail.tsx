@@ -46,14 +46,24 @@ export default function ProductDetail({ product: p, related }: { product: Produc
             {images.slice(0,4).map((img, i) => (
               <div key={i} className={`thumb ${activeImg === i ? 'active' : ''}`}
                 onClick={() => setActiveImg(i)}
-                style={{background: CARD_BG[i], position:'relative'}}>
-                <div className="ph" style={{borderRadius:8}}></div>
+                style={{background: CARD_BG[i], position:'relative', overflow:'hidden'}}>
+                {img ? (
+                  <img src={img} alt={`${p.name} ${i+1}`}
+                    style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
+                ) : (
+                  <div className="ph" style={{borderRadius:8}}></div>
+                )}
               </div>
             ))}
           </div>
-          <div className="pdp-main" style={{background: CARD_BG[activeImg]}}>
-            <div className="ph"><div className="ph-label">[ {p.name} · вид {activeImg+1}/{images.length} ]</div></div>
-            {p.is_new && <span className="card-tag" style={{top:16,left:16}}>Новинка</span>}
+          <div className="pdp-main" style={{background: CARD_BG[activeImg], position:'relative', overflow:'hidden'}}>
+            {images[activeImg] ? (
+              <img src={images[activeImg]} alt={p.name}
+                style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
+            ) : (
+              <div className="ph"><div className="ph-label">[ {p.name} · вид {activeImg+1}/{images.length} ]</div></div>
+            )}
+            {p.is_new && <span className="card-tag" style={{top:16,left:16,zIndex:2}}>Новинка</span>}
           </div>
         </div>
 

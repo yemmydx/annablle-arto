@@ -146,8 +146,21 @@ function CatalogCard({ product, idx, onQuick, onCartOpen }: { product: Product; 
   return (
     <div className="card" style={{cursor:'pointer'}}>
       <div className="card-img" style={{background: CARD_BG[gi]}} onClick={() => window.location.href = `/product/${product.slug}`}>
-        <div className="ph"><div className="ph-label">[ {product.name} ]</div></div>
-        <div className="card-img-hover" style={{background:'linear-gradient(135deg,#d4a094,#b8786a)'}} />
+        {product.images && product.images.length > 0 ? (
+          <>
+            <img src={product.images[0]} alt={product.name}
+              style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
+            {product.images[1] && (
+              <img src={product.images[1]} alt={product.name} className="card-img-hover"
+                style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:0,transition:'opacity .5s'}} />
+            )}
+          </>
+        ) : (
+          <>
+            <div className="ph"><div className="ph-label">[ {product.name} ]</div></div>
+            <div className="card-img-hover" style={{background:'linear-gradient(135deg,#d4a094,#b8786a)'}} />
+          </>
+        )}
         {product.is_new && <span className="card-tag">Новинка</span>}
         {product.price_old && !product.is_new && (
           <span className="card-tag">−{Math.round((1 - product.price / product.price_old) * 100)}%</span>
