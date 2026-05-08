@@ -73,6 +73,7 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editProduct, setEditProduct] = useState<Product | null>(null)
   const [form, setForm] = useState({
@@ -155,6 +156,45 @@ export default function AdminPage() {
     }
     setShowForm(false)
     loadData()
+  }
+
+  async function handleUploadFiles(files: FileList | null) {
+    if (!files || files.length === 0) return
+    setUploading(true)
+    try {
+      const sb = await getSupabase()
+      const uploaded: string[] = []
+      for (const file of Array.from(files)) {
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+        const safeName = `${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`
+        const { error } = await sb.storage.from('product-images').upload(safeName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        })
+        if (error) {
+          alert(`Ошибка загрузки ${file.name}: ${error.message}`)
+          continue
+        }
+        const { data } = sb.storage.from('product-images').getPublicUrl(safeName)
+        if (data?.publicUrl) uploaded.push(data.publicUrl)
+      }
+      if (uploaded.length > 0) {
+        setForm(p => ({
+          ...p,
+          images: p.images ? p.images + '\n' + uploaded.join('\n') : uploaded.join('\n')
+        }))
+      }
+    } catch (err: any) {
+      alert('Ошибка при загрузке: ' + (err?.message || 'неизвестная'))
+    }
+    setUploading(false)
+  }
+
+  function removeImage(url: string) {
+    setForm(p => ({
+      ...p,
+      images: p.images.split('\n').filter(s => s.trim() !== url.trim()).join('\n')
+    }))
   }
 
   async function handleDelete(id: string) {
@@ -404,14 +444,46 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label style={S.label}>Ссылки на фото · по одной в строке</label>
-                <textarea
-                  value={form.images}
-                  onChange={e => setForm(p => ({ ...p, images: e.target.value }))}
-                  rows={3}
-                  placeholder="https://..."
-                  style={{ ...S.input, resize: 'vertical', fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}
-                />
+                <label style={S.label}>Фотографии товара</label>
+
+                {/* Превью загруженных */}
+                {form.images.trim() && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
+                    {form.images.split('\n').map(s => s.trim()).filter(Boolean).map((url, i) => (
+                      <div key={i} style={{ position: 'relative', width: '90px', height: '90px', borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(58,40,40,0.15)', background: '#fbe9e3' }}>
+                        <img src={url} alt={`Фото ${i+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button type="button" onClick={() => removeImage(url)} style={{ position: 'absolute', top: '4px', right: '4px', width: '22px', height: '22px', borderRadius: '50%', border: 'none', background: 'rgba(58,40,40,0.85)', color: '#fff7f3', cursor: 'pointer', fontSize: '12px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Удалить">×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Кнопка загрузки файлов */}
+                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '14px', borderRadius: '12px', border: '1px dashed rgba(58,40,40,0.3)', background: 'rgba(255,247,243,0.4)', cursor: uploading ? 'wait' : 'pointer', fontSize: '13px', color: '#3a2828', marginBottom: '10px', transition: 'all .2s' }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={uploading}
+                    onChange={e => handleUploadFiles(e.target.files)}
+                    style={{ display: 'none' }}
+                  />
+                  {uploading ? '⏳ Загружаем...' : '📷 Загрузить фото с компьютера'}
+                </label>
+
+                {/* Ручной ввод ссылок */}
+                <details style={{ fontSize: '12px' }}>
+                  <summary style={{ cursor: 'pointer', color: '#5a4040', padding: '6px 0' }}>
+                    или вставить ссылки вручную
+                  </summary>
+                  <textarea
+                    value={form.images}
+                    onChange={e => setForm(p => ({ ...p, images: e.target.value }))}
+                    rows={3}
+                    placeholder="https://..."
+                    style={{ ...S.input, resize: 'vertical', fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', marginTop: '8px' }}
+                  />
+                </details>
               </div>
 
               <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', padding: '8px 0' }}>
