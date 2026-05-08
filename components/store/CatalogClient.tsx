@@ -9,9 +9,16 @@ import CartDrawer from './CartDrawer'
 
 const SIZES = ['XS','S','M','L','XL','2XL','3XL']
 const CARD_BG = ['linear-gradient(165deg,#f3c8be,#d99c8e)','linear-gradient(165deg,#ead0c4,#d4a094)','linear-gradient(165deg,#f5d8d0,#d8a89c)','linear-gradient(165deg,#e8c4b6,#c8907e)','linear-gradient(165deg,#f0c8be,#d8907e)']
+const SECTION_NAMES: Record<string, string> = {
+  lingerie: 'Бельё', swim: 'Купальники', clothes: 'Одежда',
+  tights: 'Колготки', men: 'Мужчинам', kids: 'Детям',
+}
 
-export default function CatalogClient({ products, categories, activeCategory, isNew, isFeatured }: {
-  products: Product[]; categories: Category[]; activeCategory?: string; isNew?: boolean; isFeatured?: boolean
+export default function CatalogClient({ products, categories, activeCategory, section, collection, title: titleProp, subtitle: subtitleProp, isNew, isFeatured }: {
+  products: Product[]; categories: Category[]; activeCategory?: string;
+  section?: string; collection?: string;
+  title?: string; subtitle?: string;
+  isNew?: boolean; isFeatured?: boolean
 }) {
   const { addItem } = useCart()
   const [activeSizes, setActiveSizes] = useState<string[]>([])
@@ -33,11 +40,11 @@ export default function CatalogClient({ products, categories, activeCategory, is
     return list
   }, [products, activeSizes, maxPrice, sort])
 
-  const title = isNew ? 'Новинки' : isFeatured ? 'Хиты продаж' : activeCategory
+  const title = titleProp || (isNew ? 'Новинки' : isFeatured ? 'Хиты продаж' : activeCategory
     ? categories.find(c => c.slug === activeCategory)?.name || 'Каталог'
-    : 'Бельё'
+    : 'Бельё')
 
-  const subtitle = isNew ? '— новинки' : isFeatured ? '— хиты' : '— все модели'
+  const subtitle = subtitleProp ? `— ${subtitleProp}` : (isNew ? '— новинки' : isFeatured ? '— хиты' : '— все модели')
 
   const allPrices = products.map(p => p.price)
   const priceMax = allPrices.length > 0 ? Math.max(...allPrices) : 500000
@@ -61,14 +68,29 @@ export default function CatalogClient({ products, categories, activeCategory, is
         <aside>
           <h6>Фильтры</h6>
 
+          {collection && (
+            <div className="filter-item">
+              <div style={{fontSize:10,opacity:0.5,marginBottom:6,fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.12em',textTransform:'uppercase'}}>Коллекция</div>
+              <div className="filter-link active" style={{cursor:'default'}}>{decodeURIComponent(collection)}</div>
+              <Link href={section ? `/catalog?section=${section}` : '/catalog'} style={{fontSize:11,opacity:0.6,padding:'4px 12px',display:'inline-block',color:'var(--ink-soft)'}}>← снять фильтр</Link>
+            </div>
+          )}
+
           <div className="filter-item">
-            <div style={{fontSize:10,opacity:0.5,marginBottom:6,fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.12em',textTransform:'uppercase'}}>Категория</div>
-            <Link href="/catalog" className={`filter-link ${!activeCategory && !isNew && !isFeatured ? 'active' : ''}`}>Все товары</Link>
-            {categories.map(cat => (
-              <Link key={cat.id} href={`/catalog?category=${cat.slug}`} className={`filter-link ${activeCategory === cat.slug ? 'active' : ''}`}>
-                {cat.name}
-              </Link>
-            ))}
+            <div style={{fontSize:10,opacity:0.5,marginBottom:6,fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.12em',textTransform:'uppercase'}}>
+              {section ? SECTION_NAMES[section] || 'Категория' : 'Категория'}
+            </div>
+            <Link href={section ? `/catalog?section=${section}` : '/catalog'} className={`filter-link ${!activeCategory && !isNew && !isFeatured && !collection ? 'active' : ''}`}>
+              {section ? 'Все товары раздела' : 'Все товары'}
+            </Link>
+            {(section ? categories.filter((c: any) => c.section === section) : categories).map(cat => {
+              const href = section ? `/catalog?section=${section}&cat=${cat.slug}` : `/catalog?cat=${cat.slug}`
+              return (
+                <Link key={cat.id} href={href} className={`filter-link ${activeCategory === cat.slug ? 'active' : ''}`}>
+                  {cat.name}
+                </Link>
+              )
+            })}
           </div>
 
           <div className="filter-item">
@@ -96,8 +118,9 @@ export default function CatalogClient({ products, categories, activeCategory, is
           </div>
 
           <div className="filter-item">
-            <Link href="/catalog?new=true" className={`filter-link ${isNew ? 'active' : ''}`} style={{color: isNew ? undefined : 'var(--rose-deep)'}}>✿ Новинки</Link>
-            <Link href="/catalog?featured=true" className={`filter-link ${isFeatured ? 'active' : ''}`} style={{color: isFeatured ? undefined : 'var(--rose-deep)'}}>✿ Хиты продаж</Link>
+            <Link href={section ? `/catalog?section=${section}&new=true` : '/catalog?new=true'} className={`filter-link ${isNew ? 'active' : ''}`} style={{color: isNew ? undefined : 'var(--rose-deep)'}}>✿ Новинки</Link>
+            <Link href={section ? `/catalog?section=${section}&featured=true` : '/catalog?featured=true'} className={`filter-link ${isFeatured ? 'active' : ''}`} style={{color: isFeatured ? undefined : 'var(--rose-deep)'}}>✿ Хиты продаж</Link>
+            <Link href="/catalog?sale=true" className="filter-link" style={{color:'var(--rose-deep)'}}>✿ Outlet</Link>
           </div>
         </aside>
 
