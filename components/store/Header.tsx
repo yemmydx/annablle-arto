@@ -90,11 +90,19 @@ function MegaItem({ item, isOpen, onOpen }: { item: MenuItem; isOpen: boolean; o
   const colCount = item.columns?.length || 0
   const hasBanner = !!item.banner
 
+  // Если у пункта есть и href и columns — это кликабельный заголовок раздела
+  // Клик ведёт на страницу раздела, наведение раскрывает выпадашку
   return (
     <div className="mega-wrap" onMouseEnter={onOpen}>
-      <button className={`mega-link ${isOpen ? 'is-active' : ''}`} type="button">
-        {item.label}
-      </button>
+      {item.href ? (
+        <Link href={item.href} className={`mega-link ${isOpen ? 'is-active' : ''}`}>
+          {item.label}
+        </Link>
+      ) : (
+        <button className={`mega-link ${isOpen ? 'is-active' : ''}`} type="button">
+          {item.label}
+        </button>
+      )}
 
       {isOpen && item.columns && (
         <div className="mega-panel" data-cols={colCount + (hasBanner ? 1 : 0)}>

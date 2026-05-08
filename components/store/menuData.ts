@@ -19,6 +19,7 @@ const col = (s: string) => `/catalog?col=${encodeURIComponent(s)}`
 export const MENU: MenuItem[] = [
   {
     label: 'Бельё',
+    href: '/catalog?section=lingerie',
     columns: [
       {
         title: 'Категории',
@@ -59,6 +60,7 @@ export const MENU: MenuItem[] = [
   },
   {
     label: 'Купальники',
+    href: '/catalog?section=swim',
     columns: [
       {
         title: 'Категории',
@@ -99,6 +101,7 @@ export const MENU: MenuItem[] = [
   },
   {
     label: 'Одежда',
+    href: '/catalog?section=clothes',
     columns: [
       {
         title: 'Категории',
@@ -138,6 +141,7 @@ export const MENU: MenuItem[] = [
   },
   {
     label: 'Колготки',
+    href: '/catalog?section=tights',
     columns: [
       {
         title: 'Категории',
@@ -160,6 +164,7 @@ export const MENU: MenuItem[] = [
   },
   {
     label: 'Мужчинам',
+    href: '/catalog?section=men',
     columns: [
       {
         title: 'Категории',
@@ -181,6 +186,7 @@ export const MENU: MenuItem[] = [
   },
   {
     label: 'Детям',
+    href: '/catalog?section=kids',
     columns: [
       {
         title: 'Категории',
