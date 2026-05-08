@@ -13,7 +13,16 @@ type Order = {
   id: string; order_number: number; status: string; customer_name: string
   customer_phone: string; city: string; address: string; total_amount: number; created_at: string
 }
-type Category = { id: string; name: string; slug: string }
+type Category = { id: string; name: string; slug: string; section?: string }
+
+const SECTIONS: { value: string; label: string }[] = [
+  { value: 'lingerie', label: 'Бельё' },
+  { value: 'swim', label: 'Купальники' },
+  { value: 'clothes', label: 'Одежда' },
+  { value: 'tights', label: 'Колготки' },
+  { value: 'men', label: 'Мужчинам' },
+  { value: 'kids', label: 'Детям' },
+]
 
 const S = {
   page: { minHeight: '100vh', background: '#fbe9e3', color: '#3a2828', fontFamily: "'Inter Tight', -apple-system, sans-serif", fontSize: '15px', lineHeight: 1.5 } as React.CSSProperties,
@@ -78,7 +87,7 @@ export default function AdminPage() {
   const [editProduct, setEditProduct] = useState<Product | null>(null)
   const [form, setForm] = useState({
     name: '', description: '', price: '', price_old: '',
-    category_id: '', is_new: false, is_featured: false, in_stock: true,
+    category_id: '', section: '', is_new: false, is_featured: false, in_stock: true,
     sizes: 'XS,S,M,L,XL', images: '',
   })
 
@@ -121,14 +130,17 @@ export default function AdminPage() {
 
   function openAddForm() {
     setEditProduct(null)
-    setForm({ name: '', description: '', price: '', price_old: '', category_id: categories[0]?.id || '', is_new: false, is_featured: false, in_stock: true, sizes: 'XS,S,M,L,XL', images: '' })
+    setForm({ name: '', description: '', price: '', price_old: '', category_id: '', section: '', is_new: false, is_featured: false, in_stock: true, sizes: 'XS,S,M,L,XL', images: '' })
     setShowForm(true)
   }
 
   function openEditForm(p: Product) {
     setEditProduct(p)
     const sizes = Array.from(new Set(p.product_variants?.map(v => v.size) || [])).join(',')
-    setForm({ name: p.name, description: p.description || '', price: String(p.price), price_old: p.price_old ? String(p.price_old) : '', category_id: p.category_id || '', is_new: p.is_new, is_featured: p.is_featured, in_stock: p.in_stock, sizes, images: p.images?.join('\n') || '' })
+    // Определяем раздел по выбранной категории
+    const cat = categories.find(c => c.id === p.category_id)
+    const section = cat?.section || ''
+    setForm({ name: p.name, description: p.description || '', price: String(p.price), price_old: p.price_old ? String(p.price_old) : '', category_id: p.category_id || '', section, is_new: p.is_new, is_featured: p.is_featured, in_stock: p.in_stock, sizes, images: p.images?.join('\n') || '' })
     setShowForm(true)
   }
 
@@ -295,12 +307,15 @@ export default function AdminPage() {
                   <p style={{ fontSize: '13px' }}>Добавьте первый товар, чтобы начать.</p>
                 </div>
               )}
-              {products.map(p => (
+              {products.map(p => {
+                const cat = categories.find(c => c.id === p.category_id)
+                const sectionName = cat?.section ? SECTIONS.find(s => s.value === cat.section)?.label : null
+                return (
                 <div key={p.id} style={S.row}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={S.rowName}>{p.name}</p>
                     <p style={S.rowMeta}>
-                      {p.categories?.name || 'Без категории'}
+                      {sectionName ? `${sectionName} · ` : ''}{p.categories?.name || 'Без категории'}
                       {p.is_new && ' · Новинка'}
                       {p.is_featured && ' · Хит'}
                     </p>
@@ -323,7 +338,8 @@ export default function AdminPage() {
                     ✕
                   </button>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
@@ -422,14 +438,34 @@ export default function AdminPage() {
               </div>
 
               <div>
+                <label style={S.label}>Раздел</label>
+                <select
+                  value={form.section}
+                  onChange={e => setForm(p => ({ ...p, section: e.target.value, category_id: '' }))}
+                  style={S.input}
+                >
+                  <option value="">— выберите раздел —</option>
+                  {SECTIONS.map(s => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label style={S.label}>Категория</label>
                 <select
                   value={form.category_id}
                   onChange={e => setForm(p => ({ ...p, category_id: e.target.value }))}
-                  style={S.input}
+                  style={{ ...S.input, opacity: form.section ? 1 : 0.5 }}
+                  disabled={!form.section}
                 >
-                  <option value="">Без категории</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  <option value="">
+                    {form.section ? '— выберите категорию —' : 'Сначала выберите раздел'}
+                  </option>
+                  {categories
+                    .filter(c => !form.section || c.section === form.section)
+                    .map(c => <option key={c.id} value={c.id}>{c.name}</option>)
+                  }
                 </select>
               </div>
 
