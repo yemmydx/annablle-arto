@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Product } from '@/lib/supabase'
 import { formatPrice } from '@/lib/utils'
@@ -9,7 +9,18 @@ import CartDrawer from './CartDrawer'
 
 const CARD_BG = ['linear-gradient(165deg,#f3c8be,#d99c8e)','linear-gradient(165deg,#ead0c4,#d4a094)','linear-gradient(165deg,#f5d8d0,#d8a89c)','linear-gradient(165deg,#e8c4b6,#c8907e)']
 
-export default function ProductDetail({ product: p, related }: { product: Product; related: Product[] }) {
+type ColorRow = {
+  id: string
+  product_id: string
+  name: string
+  hex: string
+  images: string[]
+  sort_order: number
+}
+
+export default function ProductDetail({ product: p, colors, related }: {
+  product: Product; colors: ColorRow[]; related: Product[]
+}) {
   const { addItem } = useCart()
   const [size, setSize] = useState('')
   const [activeImg, setActiveImg] = useState(0)
@@ -17,13 +28,39 @@ export default function ProductDetail({ product: p, related }: { product: Produc
   const [error, setError] = useState('')
   const [cartOpen, setCartOpen] = useState(false)
 
-  const sizes = [...new Set(p.product_variants?.map(v => v.size) || [])]
-  const images = p.images && p.images.length > 0 ? p.images : [null, null, null, null]
+  // Активный цвет: первый из списка (или null если цветов нет — старый товар)
+  const [activeColorIdx, setActiveColorIdx] = useState(0)
+  const activeColor = colors[activeColorIdx] || null
+
+  // Размеры — отфильтрованные по выбранному цвету (если есть variants с color)
+  const sizes = useMemo(() => {
+    if (!p.product_variants) return []
+    if (activeColor) {
+      const filtered = p.product_variants.filter((v: any) => v.color === activeColor.name)
+      return Array.from(new Set(filtered.map((v: any) => v.size)))
+    }
+    return Array.from(new Set(p.product_variants.map((v: any) => v.size)))
+  }, [p.product_variants, activeColor])
+
+  // Фото — для активного цвета (или общие images товара если цветов нет)
+  const images = useMemo(() => {
+    if (activeColor && activeColor.images && activeColor.images.length > 0) {
+      return activeColor.images
+    }
+    return p.images && p.images.length > 0 ? p.images : []
+  }, [activeColor, p.images])
+
+  // При смене цвета — сбрасываем выбранное фото и размер
+  function pickColor(idx: number) {
+    setActiveColorIdx(idx)
+    setActiveImg(0)
+    setSize('')
+  }
 
   function handleAdd() {
-    if (!size && sizes.length > 0) { setError('Выберите размер'); return }
+    if (sizes.length > 0 && !size) { setError('Выберите размер'); return }
     setError('')
-    addItem(p, size || 'M', null)
+    addItem(p, size || 'M', activeColor?.name || null)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
     setCartOpen(true)
@@ -34,7 +71,7 @@ export default function ProductDetail({ product: p, related }: { product: Produc
       <div className="catalog-head">
         <div className="crumbs">
           <Link href="/">Главная</Link> / <Link href="/catalog">Каталог</Link>
-          {p.categories && <> / <Link href={`/catalog?category=${(p.categories as any).slug}`}>{(p.categories as any).name}</Link></>}
+          {p.categories && <> / <Link href={`/catalog?cat=${(p.categories as any).slug}`}>{(p.categories as any).name}</Link></>}
           {' '} / {p.name}
         </div>
       </div>
@@ -43,10 +80,10 @@ export default function ProductDetail({ product: p, related }: { product: Produc
         {/* Галерея */}
         <div className="pdp-gallery">
           <div className="thumbs">
-            {images.slice(0,4).map((img, i) => (
+            {(images.length > 0 ? images : [null, null, null, null]).slice(0,4).map((img, i) => (
               <div key={i} className={`thumb ${activeImg === i ? 'active' : ''}`}
                 onClick={() => setActiveImg(i)}
-                style={{background: CARD_BG[i], position:'relative', overflow:'hidden'}}>
+                style={{background: CARD_BG[i % CARD_BG.length], position:'relative', overflow:'hidden'}}>
                 {img ? (
                   <img src={img} alt={`${p.name} ${i+1}`}
                     style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
@@ -56,12 +93,12 @@ export default function ProductDetail({ product: p, related }: { product: Produc
               </div>
             ))}
           </div>
-          <div className="pdp-main" style={{background: CARD_BG[activeImg], position:'relative', overflow:'hidden'}}>
+          <div className="pdp-main" style={{background: CARD_BG[activeImg % CARD_BG.length], position:'relative', overflow:'hidden'}}>
             {images[activeImg] ? (
               <img src={images[activeImg]} alt={p.name}
                 style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
             ) : (
-              <div className="ph"><div className="ph-label">[ {p.name} · вид {activeImg+1}/{images.length} ]</div></div>
+              <div className="ph"><div className="ph-label">[ {p.name} · вид {activeImg+1}/{Math.max(images.length,1)} ]</div></div>
             )}
             {p.is_new && <span className="card-tag" style={{top:16,left:16,zIndex:2}}>Новинка</span>}
           </div>
@@ -79,6 +116,27 @@ export default function ProductDetail({ product: p, related }: { product: Produc
 
           {p.description && (
             <p className="pdp-desc">{p.description}</p>
+          )}
+
+          {/* Цвета */}
+          {colors.length > 0 && (
+            <div className="pdp-row">
+              <div className="head">
+                <span>Цвет: {activeColor?.name || '—'}</span>
+              </div>
+              <div className="color-row">
+                {colors.map((c, i) => (
+                  <button
+                    key={c.id}
+                    onClick={() => pickColor(i)}
+                    className={`color-swatch ${i === activeColorIdx ? 'on' : ''}`}
+                    style={{ background: c.hex }}
+                    title={c.name}
+                    aria-label={`Выбрать цвет ${c.name}`}
+                  />
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Размеры */}

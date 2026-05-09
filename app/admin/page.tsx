@@ -7,7 +7,7 @@ type Product = {
   price: number; price_old: number | null; category_id: string | null
   images: string[]; in_stock: boolean; is_new: boolean; is_featured: boolean
   created_at: string; categories?: { name: string; slug: string } | null
-  product_variants?: { size: string }[]
+  product_variants?: { size: string; color?: string }[]
 }
 type Order = {
   id: string; order_number: number; status: string; customer_name: string
@@ -82,13 +82,13 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
-  const [uploading, setUploading] = useState(false)
+  const [uploadingColorIdx, setUploadingColorIdx] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editProduct, setEditProduct] = useState<Product | null>(null)
   const [form, setForm] = useState({
     name: '', description: '', price: '', price_old: '',
     category_id: '', section: '', is_new: false, is_featured: false, in_stock: true,
-    sizes: 'XS,S,M,L,XL', images: '',
+    colors: [] as { id?: string; name: string; hex: string; images: string; sizes: string }[],
   })
 
   useEffect(() => { setMounted(true) }, [])
@@ -117,7 +117,7 @@ export default function AdminPage() {
     try {
       const sb = await getSupabase()
       const [{ data: p }, { data: o }, { data: c }] = await Promise.all([
-        sb.from('products').select('*, categories(*), product_variants(size)').order('created_at', { ascending: false }),
+        sb.from('products').select('*, categories(*), product_variants(size, color)').order('created_at', { ascending: false }),
         sb.from('orders').select('*').order('created_at', { ascending: false }),
         sb.from('categories').select('*').order('name'),
       ])
@@ -130,49 +130,145 @@ export default function AdminPage() {
 
   function openAddForm() {
     setEditProduct(null)
-    setForm({ name: '', description: '', price: '', price_old: '', category_id: '', section: '', is_new: false, is_featured: false, in_stock: true, sizes: 'XS,S,M,L,XL', images: '' })
+    setForm({
+      name: '', description: '', price: '', price_old: '',
+      category_id: '', section: '', is_new: false, is_featured: false, in_stock: true,
+      colors: [{ name: 'Основной', hex: '#3a2828', images: '', sizes: 'XS,S,M,L,XL' }],
+    })
     setShowForm(true)
   }
 
-  function openEditForm(p: Product) {
+  async function openEditForm(p: Product) {
     setEditProduct(p)
-    const sizes = Array.from(new Set(p.product_variants?.map(v => v.size) || [])).join(',')
-    // Определяем раздел по выбранной категории
     const cat = categories.find(c => c.id === p.category_id)
     const section = cat?.section || ''
-    setForm({ name: p.name, description: p.description || '', price: String(p.price), price_old: p.price_old ? String(p.price_old) : '', category_id: p.category_id || '', section, is_new: p.is_new, is_featured: p.is_featured, in_stock: p.in_stock, sizes, images: p.images?.join('\n') || '' })
+
+    // Загружаем цвета этого товара из БД
+    const sb = await getSupabase()
+    const { data: colorRows } = await sb
+      .from('product_colors')
+      .select('*')
+      .eq('product_id', p.id)
+      .order('sort_order', { ascending: true })
+
+    let colors: { id?: string; name: string; hex: string; images: string; sizes: string }[]
+    if (colorRows && colorRows.length > 0) {
+      // Для каждого цвета подбираем его размеры из product_variants
+      colors = colorRows.map(c => {
+        const sizesForColor = (p.product_variants || [])
+          .filter(v => v.color === c.name)
+          .map(v => v.size)
+        const uniqueSizes = Array.from(new Set(sizesForColor))
+        return {
+          id: c.id,
+          name: c.name,
+          hex: c.hex,
+          images: (c.images || []).join('\n'),
+          sizes: uniqueSizes.length > 0 ? uniqueSizes.join(',') : 'XS,S,M,L,XL',
+        }
+      })
+    } else {
+      // Старый товар без цветов — конвертируем в один цвет "Основной"
+      const allSizes = Array.from(new Set(p.product_variants?.map(v => v.size) || []))
+      colors = [{
+        name: 'Основной',
+        hex: '#3a2828',
+        images: p.images?.join('\n') || '',
+        sizes: allSizes.length > 0 ? allSizes.join(',') : 'XS,S,M,L,XL',
+      }]
+    }
+
+    setForm({
+      name: p.name,
+      description: p.description || '',
+      price: String(p.price),
+      price_old: p.price_old ? String(p.price_old) : '',
+      category_id: p.category_id || '',
+      section,
+      is_new: p.is_new,
+      is_featured: p.is_featured,
+      in_stock: p.in_stock,
+      colors,
+    })
     setShowForm(true)
   }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    const sb = await getSupabase()
-    const productData = {
-      name: form.name, slug: slugify(form.name), description: form.description || null,
-      price: parseInt(form.price), price_old: form.price_old ? parseInt(form.price_old) : null,
-      category_id: form.category_id || null, is_new: form.is_new, is_featured: form.is_featured,
-      in_stock: form.in_stock, images: form.images.split('\n').map(s => s.trim()).filter(Boolean),
+    try {
+      const sb = await getSupabase()
+
+      // Собираем все фото со всех цветов в общий массив images (для совместимости и превью в каталоге)
+      const allImages = form.colors.flatMap(c =>
+        c.images.split('\n').map(s => s.trim()).filter(Boolean)
+      )
+
+      const productData = {
+        name: form.name,
+        slug: slugify(form.name),
+        description: form.description || null,
+        price: parseInt(form.price),
+        price_old: form.price_old ? parseInt(form.price_old) : null,
+        category_id: form.category_id || null,
+        is_new: form.is_new,
+        is_featured: form.is_featured,
+        in_stock: form.in_stock,
+        images: allImages,
+      }
+
+      let productId = editProduct?.id
+      if (editProduct) {
+        await sb.from('products').update(productData).eq('id', editProduct.id)
+        // Удаляем старые цвета и варианты — пересоздадим заново
+        await sb.from('product_colors').delete().eq('product_id', editProduct.id)
+        await sb.from('product_variants').delete().eq('product_id', editProduct.id)
+      } else {
+        const { data, error } = await sb.from('products').insert(productData).select().single()
+        if (error) { alert('Ошибка: ' + error.message); setLoading(false); return }
+        productId = data?.id
+      }
+
+      if (!productId) { setLoading(false); return }
+
+      // Сохраняем цвета и варианты
+      for (let i = 0; i < form.colors.length; i++) {
+        const c = form.colors[i]
+        if (!c.name.trim()) continue
+
+        const colorImages = c.images.split('\n').map(s => s.trim()).filter(Boolean)
+        await sb.from('product_colors').insert({
+          product_id: productId,
+          name: c.name.trim(),
+          hex: c.hex || '#3a2828',
+          images: colorImages,
+          sort_order: i,
+        })
+
+        // Размеры этого цвета — каждый создаёт строку в product_variants (size + color)
+        const sizes = c.sizes.split(',').map(s => s.trim()).filter(Boolean)
+        if (sizes.length > 0) {
+          const variants = sizes.map(s => ({
+            product_id: productId,
+            size: s,
+            color: c.name.trim(),
+            stock_qty: 10,
+          }))
+          await sb.from('product_variants').insert(variants)
+        }
+      }
+
+      setShowForm(false)
+      loadData()
+    } catch (err: any) {
+      alert('Ошибка сохранения: ' + (err?.message || 'неизвестная'))
     }
-    let productId = editProduct?.id
-    if (editProduct) {
-      await sb.from('products').update(productData).eq('id', editProduct.id)
-      await sb.from('product_variants').delete().eq('product_id', editProduct.id)
-    } else {
-      const { data } = await sb.from('products').insert(productData).select().single()
-      productId = data?.id
-    }
-    if (productId && form.sizes) {
-      const variants = form.sizes.split(',').map(s => ({ product_id: productId, size: s.trim(), stock_qty: 10 }))
-      await sb.from('product_variants').insert(variants)
-    }
-    setShowForm(false)
-    loadData()
+    setLoading(false)
   }
 
-  async function handleUploadFiles(files: FileList | null) {
+  async function handleUploadFiles(files: FileList | null, colorIdx: number) {
     if (!files || files.length === 0) return
-    setUploading(true)
+    setUploadingColorIdx(colorIdx)
     try {
       const sb = await getSupabase()
       const uploaded: string[] = []
@@ -191,22 +287,54 @@ export default function AdminPage() {
         if (data?.publicUrl) uploaded.push(data.publicUrl)
       }
       if (uploaded.length > 0) {
-        setForm(p => ({
-          ...p,
-          images: p.images ? p.images + '\n' + uploaded.join('\n') : uploaded.join('\n')
-        }))
+        setForm(p => {
+          const colors = [...p.colors]
+          const cur = colors[colorIdx]
+          colors[colorIdx] = {
+            ...cur,
+            images: cur.images ? cur.images + '\n' + uploaded.join('\n') : uploaded.join('\n')
+          }
+          return { ...p, colors }
+        })
       }
     } catch (err: any) {
       alert('Ошибка при загрузке: ' + (err?.message || 'неизвестная'))
     }
-    setUploading(false)
+    setUploadingColorIdx(null)
   }
 
-  function removeImage(url: string) {
+  function removeImageFromColor(colorIdx: number, url: string) {
+    setForm(p => {
+      const colors = [...p.colors]
+      const cur = colors[colorIdx]
+      colors[colorIdx] = {
+        ...cur,
+        images: cur.images.split('\n').filter(s => s.trim() !== url.trim()).join('\n')
+      }
+      return { ...p, colors }
+    })
+  }
+
+  function addColor() {
     setForm(p => ({
       ...p,
-      images: p.images.split('\n').filter(s => s.trim() !== url.trim()).join('\n')
+      colors: [...p.colors, { name: '', hex: '#3a2828', images: '', sizes: 'XS,S,M,L,XL' }]
     }))
+  }
+
+  function removeColor(idx: number) {
+    setForm(p => ({
+      ...p,
+      colors: p.colors.filter((_, i) => i !== idx)
+    }))
+  }
+
+  function updateColor(idx: number, patch: Partial<typeof form.colors[0]>) {
+    setForm(p => {
+      const colors = [...p.colors]
+      colors[idx] = { ...colors[idx], ...patch }
+      return { ...p, colors }
+    })
   }
 
   async function handleDelete(id: string) {
@@ -470,56 +598,121 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label style={S.label}>Размеры (через запятую)</label>
-                <input
-                  value={form.sizes}
-                  onChange={e => setForm(p => ({ ...p, sizes: e.target.value }))}
-                  placeholder="XS,S,M,L,XL"
-                  style={S.input}
-                />
-              </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <label style={{ ...S.label, marginBottom: 0 }}>Цвета товара</label>
+                  <button
+                    type="button"
+                    onClick={addColor}
+                    style={{ ...S.btnGhost, padding: '6px 14px', fontSize: '12px' }}
+                  >
+                    + Добавить цвет
+                  </button>
+                </div>
 
-              <div>
-                <label style={S.label}>Фотографии товара</label>
-
-                {/* Превью загруженных */}
-                {form.images.trim() && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
-                    {form.images.split('\n').map(s => s.trim()).filter(Boolean).map((url, i) => (
-                      <div key={i} style={{ position: 'relative', width: '90px', height: '90px', borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(58,40,40,0.15)', background: '#fbe9e3' }}>
-                        <img src={url} alt={`Фото ${i+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <button type="button" onClick={() => removeImage(url)} style={{ position: 'absolute', top: '4px', right: '4px', width: '22px', height: '22px', borderRadius: '50%', border: 'none', background: 'rgba(58,40,40,0.85)', color: '#fff7f3', cursor: 'pointer', fontSize: '12px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Удалить">×</button>
-                      </div>
-                    ))}
-                  </div>
+                {form.colors.length === 0 && (
+                  <p style={{ fontSize: '12px', opacity: 0.6, padding: '12px', background: 'rgba(255,247,243,0.4)', borderRadius: '10px', textAlign: 'center' }}>
+                    У товара должен быть хотя бы один цвет. Жми «+ Добавить цвет».
+                  </p>
                 )}
 
-                {/* Кнопка загрузки файлов */}
-                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '14px', borderRadius: '12px', border: '1px dashed rgba(58,40,40,0.3)', background: 'rgba(255,247,243,0.4)', cursor: uploading ? 'wait' : 'pointer', fontSize: '13px', color: '#3a2828', marginBottom: '10px', transition: 'all .2s' }}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    disabled={uploading}
-                    onChange={e => handleUploadFiles(e.target.files)}
-                    style={{ display: 'none' }}
-                  />
-                  {uploading ? '⏳ Загружаем...' : '📷 Загрузить фото с компьютера'}
-                </label>
+                {form.colors.map((color, idx) => (
+                  <div key={idx} style={{
+                    background: 'rgba(255,247,243,0.5)',
+                    border: '1px solid rgba(58,40,40,0.1)',
+                    borderRadius: '14px',
+                    padding: '18px',
+                    marginBottom: '14px',
+                  }}>
+                    {/* Заголовок цвета: свотч + название + удалить */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                      <div style={{ position: 'relative', width: '36px', height: '36px', flexShrink: 0 }}>
+                        <input
+                          type="color"
+                          value={color.hex}
+                          onChange={e => updateColor(idx, { hex: e.target.value })}
+                          style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+                          title="Выбрать цвет"
+                        />
+                        <div style={{
+                          width: '36px', height: '36px', borderRadius: '50%',
+                          background: color.hex, border: '2px solid rgba(58,40,40,0.15)',
+                          boxShadow: 'inset 0 0 0 2px rgba(255,247,243,0.6)',
+                        }} />
+                      </div>
+                      <input
+                        value={color.name}
+                        onChange={e => updateColor(idx, { name: e.target.value })}
+                        placeholder="Название цвета (Чёрный, Бежевый...)"
+                        style={{ ...S.input, flex: 1 }}
+                      />
+                      {form.colors.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => { if (confirm(`Удалить цвет «${color.name || 'без названия'}»?`)) removeColor(idx) }}
+                          style={{ background: 'transparent', border: 'none', color: '#c98e88', cursor: 'pointer', fontSize: '20px', padding: '4px 10px', lineHeight: 1 }}
+                          title="Удалить цвет"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
 
-                {/* Ручной ввод ссылок */}
-                <details style={{ fontSize: '12px' }}>
-                  <summary style={{ cursor: 'pointer', color: '#5a4040', padding: '6px 0' }}>
-                    или вставить ссылки вручную
-                  </summary>
-                  <textarea
-                    value={form.images}
-                    onChange={e => setForm(p => ({ ...p, images: e.target.value }))}
-                    rows={3}
-                    placeholder="https://..."
-                    style={{ ...S.input, resize: 'vertical', fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', marginTop: '8px' }}
-                  />
-                </details>
+                    {/* Размеры этого цвета */}
+                    <div style={{ marginBottom: '14px' }}>
+                      <label style={{ ...S.label, marginBottom: '6px' }}>Размеры в наличии</label>
+                      <input
+                        value={color.sizes}
+                        onChange={e => updateColor(idx, { sizes: e.target.value })}
+                        placeholder="XS,S,M,L"
+                        style={S.input}
+                      />
+                      <p style={{ fontSize: '11px', opacity: 0.55, marginTop: '4px' }}>
+                        Перечисли через запятую только те размеры, что есть в наличии для этого цвета
+                      </p>
+                    </div>
+
+                    {/* Фото этого цвета */}
+                    <div>
+                      <label style={{ ...S.label, marginBottom: '6px' }}>Фотографии</label>
+
+                      {color.images.trim() && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+                          {color.images.split('\n').map(s => s.trim()).filter(Boolean).map((url, i) => (
+                            <div key={i} style={{ position: 'relative', width: '70px', height: '70px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(58,40,40,0.15)', background: '#fbe9e3' }}>
+                              <img src={url} alt={`${color.name} ${i+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <button type="button" onClick={() => removeImageFromColor(idx, url)} style={{ position: 'absolute', top: '3px', right: '3px', width: '20px', height: '20px', borderRadius: '50%', border: 'none', background: 'rgba(58,40,40,0.85)', color: '#fff7f3', cursor: 'pointer', fontSize: '11px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Удалить">×</button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px', borderRadius: '10px', border: '1px dashed rgba(58,40,40,0.3)', background: 'rgba(255,247,243,0.4)', cursor: uploadingColorIdx === idx ? 'wait' : 'pointer', fontSize: '12px', color: '#3a2828' }}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          disabled={uploadingColorIdx !== null}
+                          onChange={e => handleUploadFiles(e.target.files, idx)}
+                          style={{ display: 'none' }}
+                        />
+                        {uploadingColorIdx === idx ? '⏳ Загружаем...' : '📷 Загрузить фото для этого цвета'}
+                      </label>
+
+                      <details style={{ fontSize: '11px', marginTop: '8px' }}>
+                        <summary style={{ cursor: 'pointer', color: '#5a4040', padding: '4px 0' }}>
+                          или вставить ссылки вручную
+                        </summary>
+                        <textarea
+                          value={color.images}
+                          onChange={e => updateColor(idx, { images: e.target.value })}
+                          rows={2}
+                          placeholder="https://..."
+                          style={{ ...S.input, resize: 'vertical', fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', marginTop: '6px' }}
+                        />
+                      </details>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', padding: '8px 0' }}>

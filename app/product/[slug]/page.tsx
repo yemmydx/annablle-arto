@@ -17,6 +17,13 @@ export default async function ProductPage({
 
   if (!product) notFound()
 
+  // Цвета товара (с фото для каждого цвета)
+  const { data: colors } = await supabase
+    .from('product_colors')
+    .select('*')
+    .eq('product_id', product.id)
+    .order('sort_order', { ascending: true })
+
   // Похожие товары из той же категории
   const { data: related } = await supabase
     .from('products')
@@ -28,7 +35,7 @@ export default async function ProductPage({
   return (
     <main>
       <Header />
-      <ProductDetail product={product} related={related || []} />
+      <ProductDetail product={product} colors={colors || []} related={related || []} />
       <Footer />
     </main>
   )
