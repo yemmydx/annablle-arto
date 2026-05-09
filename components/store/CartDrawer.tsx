@@ -28,15 +28,22 @@ export default function CartDrawer({ onClose }: { onClose: () => void }) {
               <h4 style={{fontFamily:'Cormorant Garamond,serif',fontSize:24,fontStyle:'italic',fontWeight:300}}>Пусто и нежно</h4>
               <p style={{fontSize:13,marginTop:8}}>Добавь что-нибудь, что хочется носить</p>
             </div>
-          ) : items.map((item, idx) => (
+          ) : items.map((item, idx) => {
+            const itemImage = item.product.images && item.product.images.length > 0 ? item.product.images[0] : null
+            return (
             <div key={`${item.product.id}-${item.size}`} style={{display:'grid',gridTemplateColumns:'80px 1fr auto',gap:14,padding:'14px 0',borderBottom:'1px solid var(--line)'}}>
-              <div style={{aspectRatio:'3/4',borderRadius:8,background:'linear-gradient(165deg,#e8b4a6,#c98e88)',position:'relative'}}>
-                <div className="ph" style={{borderRadius:8}}></div>
-              </div>
+              <Link href={`/product/${item.product.slug}`} onClick={onClose} style={{aspectRatio:'3/4',borderRadius:8,background:'linear-gradient(165deg,#e8b4a6,#c98e88)',position:'relative',overflow:'hidden',display:'block'}}>
+                {itemImage ? (
+                  <img src={itemImage} alt={item.product.name}
+                    style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
+                ) : (
+                  <div className="ph" style={{borderRadius:8}}></div>
+                )}
+              </Link>
               <div>
                 <h4 style={{fontFamily:'Cormorant Garamond,serif',fontSize:18,fontWeight:400}}>{item.product.name}</h4>
                 <p style={{fontSize:12,color:'var(--ink-soft)',margin:'2px 0'}}>
-                  {(item.product.categories as any)?.name} · р. {item.size}
+                  {(item.product.categories as any)?.name} · р. {item.size}{item.color ? ` · ${item.color}` : ''}
                 </p>
                 <div style={{display:'inline-flex',alignItems:'center',gap:4,border:'1px solid var(--line)',borderRadius:999,padding:2,marginTop:6}}>
                   <button onClick={() => updateQty(item.product.id, item.size, item.qty - 1)} style={{width:26,height:26,borderRadius:999,background:'transparent',border:'none',cursor:'pointer',fontSize:16}}>−</button>
@@ -51,7 +58,8 @@ export default function CartDrawer({ onClose }: { onClose: () => void }) {
                 </button>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Итого */}
