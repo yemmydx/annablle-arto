@@ -241,3 +241,77 @@ footer{background:var(--ink);color:var(--cream);padding:72px 36px 28px;border-ra
 .color-swatch{width:36px;height:36px;border-radius:50%;border:1px solid rgba(58,40,40,0.15);box-shadow:inset 0 0 0 2px rgba(255,247,243,0.6);cursor:pointer;padding:0;transition:transform .25s,box-shadow .25s;position:relative;}
 .color-swatch:hover{transform:scale(1.1);}
 .color-swatch.on{box-shadow:inset 0 0 0 2px rgba(255,247,243,0.6),0 0 0 2px var(--ink);transform:scale(1.05);}
+
+/* ===== PRODUCT DESCRIPTION ===== */
+.pdp-desc{
+  font-family:'Inter Tight',sans-serif;
+  font-size:14px;
+  line-height:1.7;
+  color:var(--ink-soft);
+  margin:18px 0 24px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.pdp-desc p{
+  margin:0;
+  color:var(--ink);
+  opacity:0.85;
+}
+.pdp-desc p:first-child{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-weight:300;
+  font-size:18px;
+  line-height:1.5;
+  color:var(--ink);
+  opacity:1;
+}
+.pdp-desc-list{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.pdp-desc-list li{
+  position:relative;
+  padding-left:20px;
+  color:var(--ink);
+  opacity:0.85;
+  font-size:13.5px;
+  line-height:1.6;
+}
+.pdp-desc-list li::before{
+  content:'✿';
+  position:absolute;
+  left:0;
+  top:0;
+  color:var(--rose-deep);
+  font-size:11px;
+  line-height:1.7;
+}
+.pdp-desc-meta{
+  display:flex;
+  gap:12px;
+  align-items:baseline;
+  padding:10px 14px;
+  background:rgba(255,247,243,0.55);
+  border-radius:10px;
+  border-left:2px solid var(--rose-deep);
+}
+.pdp-desc-meta .meta-key{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--ink);
+  opacity:0.6;
+  flex-shrink:0;
+  min-width:80px;
+}
+.pdp-desc-meta .meta-value{
+  font-size:13px;
+  color:var(--ink);
+}
