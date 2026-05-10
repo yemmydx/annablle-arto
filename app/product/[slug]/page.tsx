@@ -24,18 +24,37 @@ export default async function ProductPage({
     .eq('product_id', product.id)
     .order('sort_order', { ascending: true })
 
-  // Похожие товары из той же категории
+  // Товары из той же коллекции (если у товара указана коллекция)
+  let collectionProducts: any[] = []
+  if (product.collection) {
+    const { data } = await supabase
+      .from('products')
+      .select('*, categories(*), product_variants(*)')
+      .eq('collection', product.collection)
+      .neq('id', product.id)
+      .eq('in_stock', true)
+      .limit(8)
+    collectionProducts = data || []
+  }
+
+  // Похожие товары той же категории (используем как fallback если нет коллекции)
   const { data: related } = await supabase
     .from('products')
     .select('*, categories(*), product_variants(*)')
     .eq('category_id', product.category_id)
     .neq('id', product.id)
+    .eq('in_stock', true)
     .limit(4)
 
   return (
     <main>
       <Header />
-      <ProductDetail product={product} colors={colors || []} related={related || []} />
+      <ProductDetail
+        product={product}
+        colors={colors || []}
+        related={related || []}
+        collectionProducts={collectionProducts}
+      />
       <Footer />
     </main>
   )

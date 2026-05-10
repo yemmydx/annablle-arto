@@ -20,8 +20,8 @@ type ColorRow = {
   sort_order: number
 }
 
-export default function ProductDetail({ product: p, colors, related }: {
-  product: Product; colors: ColorRow[]; related: Product[]
+export default function ProductDetail({ product: p, colors, related, collectionProducts = [] }: {
+  product: Product; colors: ColorRow[]; related: Product[]; collectionProducts?: Product[]
 }) {
   const { addItem } = useCart()
   const [size, setSize] = useState('')
@@ -188,8 +188,28 @@ export default function ProductDetail({ product: p, colors, related }: {
         </div>
       </div>
 
-      {/* Похожие */}
-      {related.length > 0 && (
+      {/* Из этой коллекции */}
+      {collectionProducts.length > 0 && (
+        <section>
+          <div className="section-head">
+            <div>
+              <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:11,letterSpacing:'0.14em',textTransform:'uppercase',opacity:0.55,marginBottom:8}}>
+                Коллекция {(p as any).collection}
+              </div>
+              <h2>Из этой <em>коллекции</em></h2>
+            </div>
+            <Link href={`/catalog?col=${encodeURIComponent((p as any).collection)}`}
+              style={{fontSize:12,color:'var(--rose-deep)',textDecoration:'underline',fontFamily:'Inter Tight,sans-serif',display:'inline-flex',alignItems:'center',gap:6}}>
+              Вся коллекция
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </Link>
+          </div>
+          <ProductGrid products={collectionProducts} />
+        </section>
+      )}
+
+      {/* Похожие — показываем только если нет коллекции (иначе дублирование) */}
+      {collectionProducts.length === 0 && related.length > 0 && (
         <section>
           <div className="section-head">
             <h2>Похожие <em>товары</em></h2>

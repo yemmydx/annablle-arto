@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { formatPrice, slugify, ORDER_STATUSES } from '@/lib/utils'
+import { COLLECTIONS_BY_SECTION } from '@/lib/collections'
 
 type Product = {
   id: string; name: string; slug: string; description: string | null
@@ -87,7 +88,7 @@ export default function AdminPage() {
   const [editProduct, setEditProduct] = useState<Product | null>(null)
   const [form, setForm] = useState({
     name: '', description: '', price: '', price_old: '',
-    category_id: '', section: '', is_new: false, is_featured: false, in_stock: true,
+    category_id: '', section: '', collection: '', is_new: false, is_featured: false, in_stock: true,
     colors: [] as { id?: string; name: string; hex: string; images: string; sizes: string }[],
   })
 
@@ -132,7 +133,7 @@ export default function AdminPage() {
     setEditProduct(null)
     setForm({
       name: '', description: '', price: '', price_old: '',
-      category_id: '', section: '', is_new: false, is_featured: false, in_stock: true,
+      category_id: '', section: '', collection: '', is_new: false, is_featured: false, in_stock: true,
       colors: [{ name: 'Основной', hex: '#3a2828', images: '', sizes: 'XS,S,M,L,XL' }],
     })
     setShowForm(true)
@@ -185,6 +186,7 @@ export default function AdminPage() {
       price_old: p.price_old ? String(p.price_old) : '',
       category_id: p.category_id || '',
       section,
+      collection: (p as any).collection || '',
       is_new: p.is_new,
       is_featured: p.is_featured,
       in_stock: p.in_stock,
@@ -211,6 +213,7 @@ export default function AdminPage() {
         price: parseInt(form.price),
         price_old: form.price_old ? parseInt(form.price_old) : null,
         category_id: form.category_id || null,
+        collection: form.collection.trim() || null,
         is_new: form.is_new,
         is_featured: form.is_featured,
         in_stock: form.in_stock,
@@ -444,6 +447,7 @@ export default function AdminPage() {
                     <p style={S.rowName}>{p.name}</p>
                     <p style={S.rowMeta}>
                       {sectionName ? `${sectionName} · ` : ''}{p.categories?.name || 'Без категории'}
+                      {(p as any).collection && ` · ✿ ${(p as any).collection}`}
                       {p.is_new && ' · Новинка'}
                       {p.is_featured && ' · Хит'}
                     </p>
@@ -595,6 +599,37 @@ export default function AdminPage() {
                     .map(c => <option key={c.id} value={c.id}>{c.name}</option>)
                   }
                 </select>
+              </div>
+
+              <div>
+                <label style={S.label}>Коллекция (необязательно)</label>
+                <select
+                  value={form.collection}
+                  onChange={e => setForm(p => ({ ...p, collection: e.target.value }))}
+                  style={{ ...S.input, opacity: form.section ? 1 : 0.5 }}
+                  disabled={!form.section}
+                >
+                  <option value="">— без коллекции —</option>
+                  {form.section && (COLLECTIONS_BY_SECTION[form.section] || []).map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+                {form.section && (
+                  <details style={{ marginTop: '6px' }}>
+                    <summary style={{ fontSize: '11px', color: '#5a4040', cursor: 'pointer', padding: '2px 0' }}>
+                      или ввести свою коллекцию вручную
+                    </summary>
+                    <input
+                      value={form.collection}
+                      onChange={e => setForm(p => ({ ...p, collection: e.target.value }))}
+                      placeholder="Название коллекции"
+                      style={{ ...S.input, marginTop: '6px', fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}
+                    />
+                  </details>
+                )}
+                <p style={{ fontSize: '11px', opacity: 0.55, marginTop: '6px', lineHeight: 1.5 }}>
+                  Товары одной коллекции показываются друг другу в блоке «Из этой коллекции» на странице товара.
+                </p>
               </div>
 
               <div>

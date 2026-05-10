@@ -58,6 +58,11 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
   // Outlet — товары со старой ценой (т.е. со скидкой)
   if (searchParams.sale === 'true') query = query.not('price_old', 'is', null)
 
+  // Фильтр по коллекции (FATALE, Cotton, MAVKA и т.д.)
+  if (searchParams.col) {
+    query = query.eq('collection', decodeURIComponent(searchParams.col))
+  }
+
   const { data: products } = await query
 
   // Заголовок страницы
