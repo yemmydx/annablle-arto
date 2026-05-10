@@ -6,6 +6,7 @@ import { formatPrice } from '@/lib/utils'
 import { useCart } from '@/lib/cart'
 import ProductGrid from './ProductGrid'
 import CartDrawer from './CartDrawer'
+import SizeGuideModal from './SizeGuideModal'
 
 const CARD_BG = ['linear-gradient(165deg,#f3c8be,#d99c8e)','linear-gradient(165deg,#ead0c4,#d4a094)','linear-gradient(165deg,#f5d8d0,#d8a89c)','linear-gradient(165deg,#e8c4b6,#c8907e)']
 
@@ -27,6 +28,7 @@ export default function ProductDetail({ product: p, colors, related }: {
   const [added, setAdded] = useState(false)
   const [error, setError] = useState('')
   const [cartOpen, setCartOpen] = useState(false)
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false)
 
   // Активный цвет: первый из списка (или null если цветов нет — старый товар)
   const [activeColorIdx, setActiveColorIdx] = useState(0)
@@ -144,9 +146,9 @@ export default function ProductDetail({ product: p, colors, related }: {
             <div className="pdp-row">
               <div className="head">
                 <span>Размер: {size || '—'}</span>
-                <Link href="/size-guide" style={{textTransform:'none',letterSpacing:0,opacity:0.7,textDecoration:'underline',fontFamily:'Inter Tight,sans-serif',fontSize:12,background:'none',border:'none',color:'inherit',cursor:'pointer'}}>
+                <button onClick={() => setSizeGuideOpen(true)} style={{textTransform:'none',letterSpacing:0,opacity:0.7,textDecoration:'underline',fontFamily:'Inter Tight,sans-serif',fontSize:12,background:'none',border:'none',color:'inherit',cursor:'pointer',padding:0}}>
                   Таблица размеров
-                </Link>
+                </button>
               </div>
               <div className="size-row">
                 {sizes.map(s => (
@@ -196,6 +198,7 @@ export default function ProductDetail({ product: p, colors, related }: {
       )}
 
       {cartOpen && <CartDrawer onClose={() => setCartOpen(false)} />}
+      {sizeGuideOpen && <SizeGuideModal section={(p.categories as any)?.section || null} onClose={() => setSizeGuideOpen(false)} />}
     </>
   )
 }
