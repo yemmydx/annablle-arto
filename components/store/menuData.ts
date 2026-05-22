@@ -24,23 +24,14 @@ export const MENU: MenuItem[] = [
       {
         title: 'Категории',
         items: [
-          { label: 'Бюстгальтеры', href: cat('bra') },
+          { label: 'Классическое бельё', href: cat('classic-lingerie') },
+          { label: 'Бельё мода', href: cat('fashion-lingerie') },
           { label: 'Трусы женские', href: cat('panties') },
           { label: 'Трусы хлопок, модал', href: cat('panties-cotton') },
           { label: 'Бесшовное бельё', href: cat('seamless') },
-          { label: 'Комплекты белья', href: cat('sets') },
           { label: 'Боди', href: cat('bodysuit') },
           { label: 'Аксессуары', href: cat('accessories') },
         ],
-      },
-      {
-        title: 'Коллекции',
-        items: [
-          'Cotton','Obrana lingerie','Freedom','Idol','Noemi','Anabelle','Dea','Aida',
-          'Per Amore','Lure','Rosalia','Sorpresa','FATALE','Lily','Lovely','Intrigo',
-          'Énigme','Peony','Charm','Instinct','Velour (Lux)','Zefira','Diana','Silk',
-          'Strong&Tender','Nika',
-        ].map(name => ({ label: name, href: col(name) })),
       },
       {
         title: 'Новинки / Акции',
@@ -52,11 +43,6 @@ export const MENU: MenuItem[] = [
         ],
       },
     ],
-    banner: {
-      title: 'FATALE',
-      subtitle: 'New Collection',
-      href: col('FATALE'),
-    },
   },
   {
     label: 'Купальники',
@@ -73,16 +59,6 @@ export const MENU: MenuItem[] = [
         ],
       },
       {
-        title: 'Коллекции',
-        items: [
-          'Costa Brava','Sunny Kiss','Afina','Perla','Laguna','Malibu','Sport Glam',
-          'Basic Line Anabel Arto','Bora-Bora','Siren','Monte-Carlo','Zagrava','Mandry',
-          'Slavna','Mantra','Bella','Barvy','Synevyr','Dolce Vita','Marrakesh','Sahara',
-          'Cruise','Monaco','Wild&Free','Dopamine Splash','Diva','Flora Noir','Tropicana',
-          'Playa','Basic Line Obrana','Tesoro','Copacabana','Wild&Gentle','Liana',
-        ].map(name => ({ label: name, href: col(name) })),
-      },
-      {
         title: 'Новинки / Акции',
         items: [
           { label: 'Новинки', href: '/catalog?new=true&cat=swim' },
@@ -93,11 +69,6 @@ export const MENU: MenuItem[] = [
         ],
       },
     ],
-    banner: {
-      title: 'Basic Line',
-      subtitle: 'Anabelle Arto · New Collection',
-      href: col('Basic Line Anabel Arto'),
-    },
   },
   {
     label: 'Одежда',
@@ -116,14 +87,6 @@ export const MENU: MenuItem[] = [
         ],
       },
       {
-        title: 'Коллекции',
-        items: [
-          'Velour (Lux)','Obrana lingerie','Cotton','Lure','Peony','Dea','Lily','Lovely',
-          'Amuleto','Idol','Énigme','MAVKA','Noemi','Savana','FATALE','Silk','Erato (Lux)',
-          'Nika','Instinct','Miracle','Aurora','Aida','Violett',
-        ].map(name => ({ label: name, href: col(name) })),
-      },
-      {
         title: 'Новинки / Акции',
         items: [
           { label: 'Новинки', href: '/catalog?new=true&cat=clothes' },
@@ -133,11 +96,6 @@ export const MENU: MenuItem[] = [
         ],
       },
     ],
-    banner: {
-      title: 'Velour (Lux)',
-      subtitle: 'New Collection',
-      href: col('Velour (Lux)'),
-    },
   },
   {
     label: 'Колготки',
@@ -199,24 +157,12 @@ export const MENU: MenuItem[] = [
         ],
       },
       {
-        title: 'Коллекции',
-        items: [
-          { label: 'MAVKA', href: col('MAVKA') },
-          { label: 'Bora-Bora', href: col('Bora-Bora') },
-        ],
-      },
-      {
         title: 'Новинки / Акции',
         items: [
           { label: 'Акции', href: '/catalog?sale=true&cat=kids' },
         ],
       },
     ],
-    banner: {
-      title: 'MAVKA',
-      subtitle: 'New Collection',
-      href: col('MAVKA'),
-    },
   },
   {
     label: 'Outlet',
