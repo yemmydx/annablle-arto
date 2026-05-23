@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
 
 const ITEMS = [
   { label: 'Комплект', sub: 'Velvet Rose', color: 'linear-gradient(165deg,#f3c8be,#c98e88)' },
@@ -40,31 +41,26 @@ function useScrollY() {
 }
 
 export default function AboutClient() {
-  const conveyorRef = useRef<HTMLDivElement>(null)
-  const [offset, setOffset] = useState(0)
   const heroRef = useRef<HTMLDivElement>(null)
   const [heroOffset, setHeroOffset] = useState(0)
+  const [settings, setSettings] = useState<Record<string, string>>({})
 
-  // Конвейер — бесконечная прокрутка карточек
+  // Загружаем настройки сайта (фоновые фото)
   useEffect(() => {
-    let frame: number
-    let start: number | null = null
-    const speed = 0.5
-    function animate(ts: number) {
-      if (start === null) start = ts
-      const elapsed = ts - start
-      setOffset(prev => {
-        const next = prev + speed
-        // Сбрасываем когда прошли половину (дублируем массив)
-        const itemW = 220 + 16
-        const half = ITEMS.length * itemW
-        return next >= half ? 0 : next
-      })
-      frame = requestAnimationFrame(animate)
-    }
-    frame = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(frame)
+    supabase.from('site_settings').select('key, value').then(({ data }) => {
+      const map: Record<string, string> = {}
+      for (const row of data || []) { if (row.value) map[row.key] = row.value }
+      setSettings(map)
+    })
   }, [])
+
+  const heroBg = settings['hero_bg']
+  const contactImgs = [
+    settings['contact_img_1'],
+    settings['contact_img_2'],
+    settings['contact_img_3'],
+    settings['contact_img_4'],
+  ]
 
   // Параллакс героя при скролле страницы
   useEffect(() => {
@@ -83,6 +79,13 @@ export default function AboutClient() {
 
       {/* HERO с параллаксом */}
       <div ref={heroRef} style={{ position: 'relative', height: '90vh', minHeight: 600, overflow: 'hidden', background: 'linear-gradient(135deg, var(--rose) 0%, var(--rose-deep) 100%)' }}>
+        {/* Фоновое фото (если загружено в админке) */}
+        {heroBg && (
+          <>
+            <img src={heroBg} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(58,40,40,0.55) 0%, rgba(58,40,40,0.2) 50%, rgba(58,40,40,0.1) 100%)' }} />
+          </>
+        )}
         {/* Фоновые плавающие кружки */}
         <div style={{ position: 'absolute', inset: 0, transform: `translateY(${heroOffset}px)`, transition: 'transform 0.1s linear' }}>
           {[
@@ -117,27 +120,6 @@ export default function AboutClient() {
             <div key={s.label} style={{ textAlign: 'right' }}>
               <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 48, fontWeight: 300, color: 'var(--cream)', lineHeight: 1 }}>{s.num}</div>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,247,243,0.6)', marginTop: 4 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* КОНВЕЙЕР — бесконечно едет */}
-      <div style={{ background: 'var(--ink)', padding: '48px 0', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', gap: 16, width: 'max-content', transform: `translateX(-${offset}px)`, willChange: 'transform' }}>
-          {/* Дублируем массив для бесконечности */}
-          {[...ITEMS, ...ITEMS, ...ITEMS].map((item, i) => (
-            <div key={i} style={{ width: 220, flexShrink: 0 }}>
-              <div style={{ aspectRatio: '3/4', borderRadius: 12, background: item.color, position: 'relative', marginBottom: 12, overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(45deg,rgba(255,255,255,0.06) 0,rgba(255,255,255,0.06) 2px,transparent 2px,transparent 14px)' }} />
-                <div style={{ position: 'absolute', bottom: 14, left: 14 }}>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,247,243,0.8)', background: 'rgba(58,40,40,0.4)', padding: '3px 7px', borderRadius: 4, backdropFilter: 'blur(8px)' }}>
-                    [ {item.label} ]
-                  </span>
-                </div>
-              </div>
-              <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: 'var(--cream)', fontStyle: 'italic', paddingLeft: 4 }}>{item.sub}</p>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,247,243,0.4)', paddingLeft: 4, marginTop: 2 }}>{item.label}</p>
             </div>
           ))}
         </div>
@@ -194,40 +176,6 @@ export default function AboutClient() {
         </div>
       </section>
 
-      {/* ВРАЩАЮЩИЙСЯ КОНВЕЙЕР — горизонтальный скролл при скролле */}
-      <div style={{ background: 'var(--bg-2)', padding: '80px 0', overflow: 'hidden' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 60px', marginBottom: 40 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 48, lineHeight: 1, letterSpacing: '-0.01em' }}>
-              Коллекция <em style={{ fontStyle: 'italic', color: 'var(--rose-deep)' }}>2025</em>
-            </h2>
-            <Link href="/catalog" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink)', textDecoration: 'none', borderBottom: '1px solid var(--ink)', paddingBottom: 2 }}>
-              Смотреть всё →
-            </Link>
-          </div>
-        </div>
-
-        {/* Горизонтальный ряд карточек — слева направо */}
-        <div style={{ display: 'flex', gap: 16, padding: '0 60px', overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {ITEMS.map((item, i) => (
-            <div key={i} style={{ flexShrink: 0, width: 260 }}>
-              <div style={{ aspectRatio: '3/4', borderRadius: 12, background: item.color, position: 'relative', overflow: 'hidden', marginBottom: 14, cursor: 'pointer', transition: 'transform .5s cubic-bezier(.2,.7,.2,1)' }}
-                onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-8px)')}
-                onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}>
-                <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(45deg,rgba(255,255,255,0.06) 0,rgba(255,255,255,0.06) 2px,transparent 2px,transparent 14px)' }} />
-                <div style={{ position: 'absolute', bottom: 16, left: 16, right: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                  <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 28, color: 'var(--cream)', lineHeight: 1 }}>{item.sub}</h3>
-                  <div style={{ width: 32, height: 32, borderRadius: 999, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'grid', placeItems: 'center', color: 'var(--cream)' }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M7 17 17 7M9 7h8v8"/></svg>
-                  </div>
-                </div>
-              </div>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.5 }}>{item.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* КОНТАКТЫ */}
       <section style={{ padding: '96px 60px', background: 'var(--ink)', color: 'var(--cream)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
@@ -253,8 +201,12 @@ export default function AboutClient() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {ITEMS.slice(0, 4).map((item, i) => (
-              <div key={i} style={{ aspectRatio: '1', borderRadius: 12, background: item.color, position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(45deg,rgba(255,255,255,0.06) 0,rgba(255,255,255,0.06) 2px,transparent 2px,transparent 14px)' }} />
+              <div key={i} style={{ aspectRatio: '1', borderRadius: 12, background: contactImgs[i] ? '#3a2828' : item.color, position: 'relative', overflow: 'hidden' }}>
+                {contactImgs[i] ? (
+                  <img src={contactImgs[i]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(45deg,rgba(255,255,255,0.06) 0,rgba(255,255,255,0.06) 2px,transparent 2px,transparent 14px)' }} />
+                )}
               </div>
             ))}
           </div>
