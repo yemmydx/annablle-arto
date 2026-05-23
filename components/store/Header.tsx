@@ -4,15 +4,42 @@ import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 import CartDrawer from './CartDrawer'
 import { MENU, MenuItem } from './menuData'
+import { supabaseBrowser as supabase } from '@/lib/supabaseBrowser'
+
+// Раздел (из href ?section=) → ключ настройки баннера
+const SECTION_BANNER_KEY: Record<string, string> = {
+  lingerie: 'menu_banner_lingerie',
+  swim: 'menu_banner_swim',
+  clothes: 'menu_banner_clothes',
+  tights: 'menu_banner_tights',
+  men: 'menu_banner_men',
+  kids: 'menu_banner_kids',
+}
+
+function sectionFromHref(href?: string): string | null {
+  if (!href) return null
+  const m = href.match(/section=([a-z]+)/)
+  return m ? m[1] : null
+}
 
 export default function Header() {
   const totalItems = useCart(s => s.totalItems())
   const [mounted, setMounted] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [banners, setBanners] = useState<Record<string, string>>({})
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => setMounted(true), [])
+
+  // Загружаем баннеры меню из настроек
+  useEffect(() => {
+    supabase.from('site_settings').select('key, value').then(({ data }) => {
+      const map: Record<string, string> = {}
+      for (const row of data || []) { if (row.value) map[row.key] = row.value }
+      setBanners(map)
+    })
+  }, [])
 
   // Закрываем меню с задержкой — чтобы можно было водить мышью между пунктом и панелью
   function scheduleClose() {
@@ -34,14 +61,19 @@ export default function Header() {
     <>
       <header className="nav">
         <nav className="mega-nav" onMouseLeave={scheduleClose}>
-          {MENU.map((item, i) => (
+          {MENU.map((item, i) => {
+            const sec = sectionFromHref(item.href)
+            const bannerImg = sec ? banners[SECTION_BANNER_KEY[sec]] : undefined
+            return (
             <MegaItem
               key={item.label}
               item={item}
               isOpen={openIndex === i}
               onOpen={() => { cancelClose(); setOpenIndex(i) }}
+              bannerImg={bannerImg}
             />
-          ))}
+            )
+          })}
         </nav>
 
         <Link href="/" className="brand" onMouseEnter={() => setOpenIndex(null)}>
@@ -81,14 +113,14 @@ export default function Header() {
   )
 }
 
-function MegaItem({ item, isOpen, onOpen }: { item: MenuItem; isOpen: boolean; onOpen: () => void }) {
+function MegaItem({ item, isOpen, onOpen, bannerImg }: { item: MenuItem; isOpen: boolean; onOpen: () => void; bannerImg?: string }) {
   // Outlet и др. без выпадения — обычная ссылка
   if (item.href && !item.columns) {
     return <Link href={item.href} className="mega-link">{item.label}</Link>
   }
 
   const colCount = item.columns?.length || 0
-  const hasBanner = !!item.banner
+  const hasBanner = !!bannerImg
 
   // Если у пункта есть и href и columns — это кликабельный заголовок раздела
   // Клик ведёт на страницу раздела, наведение раскрывает выпадашку
@@ -120,12 +152,13 @@ function MegaItem({ item, isOpen, onOpen }: { item: MenuItem; isOpen: boolean; o
               </div>
             ))}
 
-            {item.banner && (
-              <Link href={item.banner.href} className="mega-banner">
-                <div className="mega-banner-overlay" />
-                <div className="mega-banner-text">
-                  <div className="mega-banner-title">{item.banner.title}</div>
-                  <div className="mega-banner-subtitle">{item.banner.subtitle}</div>
+            {bannerImg && (
+              <Link href={item.href || '/catalog'} className="mega-banner" style={{ position: 'relative', overflow: 'hidden', minHeight: 280, borderRadius: 14, display: 'block' }}>
+                <img src={bannerImg} alt={item.label} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(58,40,40,0.5), transparent 60%)' }} />
+                <div className="mega-banner-text" style={{ position: 'absolute', bottom: 18, left: 18, zIndex: 2 }}>
+                  <div className="mega-banner-title" style={{ color: '#fff7f3' }}>{item.label}</div>
+                  <div className="mega-banner-subtitle" style={{ color: 'rgba(255,247,243,0.85)' }}>Смотреть раздел →</div>
                 </div>
               </Link>
             )}
