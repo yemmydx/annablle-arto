@@ -25,56 +25,6 @@ const SECTIONS: { value: string; label: string }[] = [
   { value: 'kids', label: 'Детям' },
 ]
 
-// Слот для загрузки одного изображения настройки
-function SettingImageSlot({ settingKey, value, uploading, onUpload, onRemove, wide, square, tall }: {
-  settingKey: string
-  value?: string
-  uploading: boolean
-  onUpload: (files: FileList | null, key: string) => void
-  onRemove: (key: string) => void
-  wide?: boolean
-  square?: boolean
-  tall?: boolean
-}) {
-  const aspect = wide ? '16/9' : square ? '1' : tall ? '3/4' : '4/3'
-  return (
-    <div>
-      <div style={{
-        aspectRatio: aspect, borderRadius: 12, overflow: 'hidden', position: 'relative',
-        border: '1px solid rgba(58,40,40,0.15)',
-        background: value ? '#fbe9e3' : 'linear-gradient(135deg,#f3c8be,#c98e88)',
-      }}>
-        {value ? (
-          <img src={value} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-        ) : (
-          <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', color: 'rgba(255,247,243,0.8)', fontSize: 12, fontFamily: "'JetBrains Mono', monospace" }}>
-            нет фото
-          </div>
-        )}
-      </div>
-      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-        <label style={{
-          flex: 1, textAlign: 'center', padding: '8px 10px', borderRadius: 999,
-          border: '1px solid rgba(58,40,40,0.25)', cursor: uploading ? 'wait' : 'pointer',
-          fontSize: 12, background: 'transparent', color: '#3a2828',
-        }}>
-          <input type="file" accept="image/*" disabled={uploading} style={{ display: 'none' }}
-            onChange={e => onUpload(e.target.files, settingKey)} />
-          {uploading ? '⏳...' : value ? '🔄 Заменить' : '📷 Загрузить'}
-        </label>
-        {value && (
-          <button type="button" onClick={() => onRemove(settingKey)} style={{
-            padding: '8px 12px', borderRadius: 999, border: 'none',
-            background: 'transparent', color: '#c98e88', cursor: 'pointer', fontSize: 12,
-          }}>
-            убрать
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
-
 const S = {
   page: { minHeight: '100vh', background: '#fbe9e3', color: '#3a2828', fontFamily: "'Inter Tight', -apple-system, sans-serif", fontSize: '15px', lineHeight: 1.5 } as React.CSSProperties,
   bg: { position: 'fixed', inset: 0, zIndex: -1, background: 'radial-gradient(1200px 800px at 80% -10%,#fcd9cc 0%,transparent 60%),radial-gradient(1000px 700px at -10% 110%,#f3c8be 0%,transparent 55%),#fbe9e3' } as React.CSSProperties,
@@ -128,12 +78,10 @@ export default function AdminPage() {
   const [mounted, setMounted] = useState(false)
   const [authed, setAuthed] = useState(false)
   const [password, setPassword] = useState('')
-  const [tab, setTab] = useState<'products' | 'orders' | 'settings'>('products')
+  const [tab, setTab] = useState<'products' | 'orders'>('products')
   const [products, setProducts] = useState<Product[]>([])
   const [orders, setOrders] = useState<Order[]>([])
   const [categories, setCategories] = useState<Category[]>([])
-  const [settings, setSettings] = useState<Record<string, string>>({})
-  const [uploadingSetting, setUploadingSetting] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [uploadingColorIdx, setUploadingColorIdx] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -169,18 +117,14 @@ export default function AdminPage() {
     setLoading(true)
     try {
       const sb = await getSupabase()
-      const [{ data: p }, { data: o }, { data: c }, { data: s }] = await Promise.all([
+      const [{ data: p }, { data: o }, { data: c }] = await Promise.all([
         sb.from('products').select('*, categories(*), product_variants(size, color)').order('created_at', { ascending: false }),
         sb.from('orders').select('*').order('created_at', { ascending: false }),
         sb.from('categories').select('*').order('name'),
-        sb.from('site_settings').select('key, value'),
       ])
       setProducts(p || [])
       setOrders(o || [])
       setCategories(c || [])
-      const sMap: Record<string, string> = {}
-      for (const row of s || []) { if (row.value) sMap[row.key] = row.value }
-      setSettings(sMap)
     } catch (err) { console.error(err) }
     setLoading(false)
   }
@@ -396,41 +340,6 @@ export default function AdminPage() {
     })
   }
 
-  // === НАСТРОЙКИ САЙТА: загрузка фото для конкретного ключа ===
-  async function handleSettingUpload(files: FileList | null, key: string) {
-    if (!files || files.length === 0) return
-    setUploadingSetting(key)
-    try {
-      const sb = await getSupabase()
-      const file = files[0]
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-      const safeName = `settings-${key}-${Date.now()}.${ext}`
-      const { error } = await sb.storage.from('product-images').upload(safeName, file, { cacheControl: '3600', upsert: false })
-      if (error) { alert(`Ошибка загрузки: ${error.message}`); setUploadingSetting(null); return }
-      const { data } = sb.storage.from('product-images').getPublicUrl(safeName)
-      const url = data?.publicUrl
-      if (url) {
-        // upsert настройку в БД
-        await sb.from('site_settings').upsert({ key, value: url, updated_at: new Date().toISOString() })
-        setSettings(prev => ({ ...prev, [key]: url }))
-      }
-    } catch (err: any) {
-      alert('Ошибка: ' + (err?.message || 'неизвестная'))
-    }
-    setUploadingSetting(null)
-  }
-
-  async function handleSettingRemove(key: string) {
-    if (!confirm('Убрать это изображение? Вернётся стандартный фон.')) return
-    try {
-      const sb = await getSupabase()
-      await sb.from('site_settings').upsert({ key, value: '', updated_at: new Date().toISOString() })
-      setSettings(prev => { const n = { ...prev }; delete n[key]; return n })
-    } catch (err: any) {
-      alert('Ошибка: ' + (err?.message || 'неизвестная'))
-    }
-  }
-
   async function handleDelete(id: string) {
     if (!confirm('Удалить товар?')) return
     const sb = await getSupabase()
@@ -507,12 +416,6 @@ export default function AdminPage() {
           >
             Заказы
             {newOrdersCount > 0 && <span style={S.tabBadge}>{newOrdersCount}</span>}
-          </button>
-          <button
-            onClick={() => setTab('settings')}
-            style={{ ...S.tab, ...(tab === 'settings' ? S.tabActive : {}) }}
-          >
-            Настройки
           </button>
         </div>
 
@@ -612,89 +515,6 @@ export default function AdminPage() {
                   </p>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {tab === 'settings' && (
-          <div>
-            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.6, marginBottom: '20px' }}>
-              Изображения сайта
-            </p>
-
-            {/* Hero */}
-            <div style={S.card}>
-              <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: '24px', marginBottom: '6px' }}>
-                Главный баннер
-              </h3>
-              <p style={{ fontSize: '12px', opacity: 0.6, marginBottom: '16px' }}>
-                Большое фото на главной странице (где «Бельё, в котором хочется жить»). Рекомендуемый размер: 1920×1080 или больше.
-              </p>
-              <SettingImageSlot
-                settingKey="hero_bg"
-                value={settings['hero_bg']}
-                uploading={uploadingSetting === 'hero_bg'}
-                onUpload={handleSettingUpload}
-                onRemove={handleSettingRemove}
-                wide
-              />
-            </div>
-
-            {/* Найди нас */}
-            <div style={{ ...S.card, marginTop: '20px' }}>
-              <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: '24px', marginBottom: '6px' }}>
-                Блок «Найди нас»
-              </h3>
-              <p style={{ fontSize: '12px', opacity: 0.6, marginBottom: '16px' }}>
-                Четыре квадрата справа от контактов. Можно загрузить от 1 до 4 фото.
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px' }}>
-                {['contact_img_1', 'contact_img_2', 'contact_img_3', 'contact_img_4'].map((k, i) => (
-                  <div key={k}>
-                    <p style={{ fontSize: '11px', opacity: 0.5, marginBottom: '6px', fontFamily: "'JetBrains Mono', monospace" }}>Фото {i + 1}</p>
-                    <SettingImageSlot
-                      settingKey={k}
-                      value={settings[k]}
-                      uploading={uploadingSetting === k}
-                      onUpload={handleSettingUpload}
-                      onRemove={handleSettingRemove}
-                      square
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Баннеры меню */}
-            <div style={{ ...S.card, marginTop: '20px' }}>
-              <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: '24px', marginBottom: '6px' }}>
-                Баннеры в выпадающем меню
-              </h3>
-              <p style={{ fontSize: '12px', opacity: 0.6, marginBottom: '16px' }}>
-                Картинка справа в выпадающем меню каждого раздела. Вертикальный формат (примерно 3:4).
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px' }}>
-                {[
-                  ['menu_banner_lingerie', 'Бельё'],
-                  ['menu_banner_swim', 'Купальники'],
-                  ['menu_banner_clothes', 'Одежда'],
-                  ['menu_banner_tights', 'Колготки'],
-                  ['menu_banner_men', 'Мужчинам'],
-                  ['menu_banner_kids', 'Детям'],
-                ].map(([k, label]) => (
-                  <div key={k}>
-                    <p style={{ fontSize: '11px', opacity: 0.5, marginBottom: '6px', fontFamily: "'JetBrains Mono', monospace" }}>{label}</p>
-                    <SettingImageSlot
-                      settingKey={k}
-                      value={settings[k]}
-                      uploading={uploadingSetting === k}
-                      onUpload={handleSettingUpload}
-                      onRemove={handleSettingRemove}
-                      tall
-                    />
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         )}
