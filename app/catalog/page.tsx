@@ -30,6 +30,13 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
 
   const { data: categories } = await supabase.from('categories').select('*').order('name')
 
+  // Определяем раздел: либо из URL (?section=), либо по выбранной категории
+  let effectiveSection = searchParams.section
+  if (!effectiveSection && catSlug) {
+    const cat = (categories || []).find(c => c.slug === catSlug)
+    if (cat && (cat as any).section) effectiveSection = (cat as any).section
+  }
+
   let query = supabase
     .from('products')
     .select('*, categories(*), product_variants(*)')
@@ -92,7 +99,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
         products={products || []}
         categories={categories || []}
         activeCategory={catSlug}
-        section={searchParams.section}
+        section={effectiveSection}
         collection={searchParams.col}
         title={title}
         subtitle={subtitle}

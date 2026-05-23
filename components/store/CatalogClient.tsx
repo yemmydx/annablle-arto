@@ -26,19 +26,35 @@ export default function CatalogClient({ products, categories, activeCategory, se
   const [sort, setSort] = useState('new')
   const [quickProduct, setQuickProduct] = useState<Product | null>(null)
   const [cartOpen, setCartOpen] = useState(false)
+  const [activeColors, setActiveColors] = useState<string[]>([])
 
   const toggleSize = (s: string) => setActiveSizes(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s])
+  const toggleColor = (c: string) => setActiveColors(p => p.includes(c) ? p.filter(x => x !== c) : [...p, c])
+
+  // Все доступные цвета среди показанных товаров
+  const availableColors = useMemo(() => {
+    const set = new Set<string>()
+    for (const p of products) {
+      for (const v of p.product_variants || []) {
+        if (v.color) set.add(v.color)
+      }
+    }
+    return Array.from(set)
+  }, [products])
 
   const filtered = useMemo(() => {
     let list = [...products]
     if (activeSizes.length > 0) {
       list = list.filter(p => p.product_variants?.some(v => activeSizes.includes(v.size)))
     }
+    if (activeColors.length > 0) {
+      list = list.filter(p => p.product_variants?.some(v => v.color && activeColors.includes(v.color)))
+    }
     list = list.filter(p => p.price <= maxPrice)
     if (sort === 'price_asc') list.sort((a, b) => a.price - b.price)
     if (sort === 'price_desc') list.sort((a, b) => b.price - a.price)
     return list
-  }, [products, activeSizes, maxPrice, sort])
+  }, [products, activeSizes, activeColors, maxPrice, sort])
 
   const title = titleProp || (isNew ? 'Новинки' : isFeatured ? 'Хиты продаж' : activeCategory
     ? categories.find(c => c.slug === activeCategory)?.name || 'Каталог'
@@ -116,6 +132,23 @@ export default function CatalogClient({ products, categories, activeCategory, se
               <span>0 ₸</span><span>{formatPrice(maxPrice)}</span>
             </div>
           </div>
+
+          {availableColors.length > 0 && (
+            <div className="filter-item">
+              <div style={{fontSize:10,opacity:0.5,marginBottom:8,fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.12em',textTransform:'uppercase'}}>Цвет</div>
+              <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                {availableColors.map(c => (
+                  <button key={c} onClick={() => toggleColor(c)} style={{
+                    padding:'6px 12px',borderRadius:999,
+                    border:`1px solid ${activeColors.includes(c) ? 'var(--ink)' : 'rgba(58,40,40,0.2)'}`,
+                    background: activeColors.includes(c) ? 'var(--ink)' : 'transparent',
+                    color: activeColors.includes(c) ? 'var(--cream)' : 'var(--ink)',
+                    fontFamily:'inherit',fontSize:12,cursor:'pointer',transition:'all .2s',
+                  }}>{c}</button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="filter-item">
             <Link href={section ? `/catalog?section=${section}&new=true` : '/catalog?new=true'} className={`filter-link ${isNew ? 'active' : ''}`} style={{color: isNew ? undefined : 'var(--rose-deep)'}}>✿ Новинки</Link>
