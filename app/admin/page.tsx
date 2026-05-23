@@ -6,6 +6,7 @@ type Product = {
   id: string
   name: string
   slug: string
+  description?: string   // ← добавь эту строку
   price: number
   price_old?: number
   in_stock: boolean
