@@ -103,6 +103,9 @@ export default function AdminPage() {
     category_id: '', is_new: false, is_featured: false, in_stock: true,
     sizes: 'XS,S,M,L,XL', images: '',
   })
+  const [settings, setSettings] = useState<Record<string, string>>({})
+  const [settingsSaving, setSettingsSaving] = useState(false)
+  const [settingsSaved, setSettingsSaved] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
   if (!mounted) return null
@@ -132,14 +135,22 @@ export default function AdminPage() {
     setLoading(true)
     try {
       const sb = await getSupabase()
-      const [prodRes, ordersRes, catRes] = await Promise.allSettled([
+      const [prodRes, ordersRes, catRes, settingsRes] = await Promise.allSettled([
         sb.from('products').select('*, categories(*), product_variants(size)').order('created_at', { ascending: false }),
         fetch('/api/admin/orders').then(r => r.json()),
         sb.from('categories').select('*').order('name'),
+        sb.from('site_settings').select('key, value'),
       ])
 
       if (prodRes.status === 'fulfilled') setProducts(prodRes.value.data || [])
       if (catRes.status === 'fulfilled') setCategories(catRes.value.data || [])
+      if (settingsRes.status === 'fulfilled') {
+        const map: Record<string, string> = {}
+        for (const row of settingsRes.value.data || []) {
+          if (row.value) map[row.key] = row.value
+        }
+        setSettings(map)
+      }
       if (ordersRes.status === 'fulfilled' && Array.isArray(ordersRes.value)) {
         setOrders(ordersRes.value)
       } else {
@@ -148,6 +159,24 @@ export default function AdminPage() {
       }
     } catch (err) { console.error(err) }
     setLoading(false)
+  }
+
+  async function saveSettings() {
+    setSettingsSaving(true)
+    setSettingsSaved(false)
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings }),
+      })
+      const data = await res.json()
+      if (!res.ok) { alert('Ошибка сохранения: ' + (data?.error || res.status)) }
+      else { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 2500) }
+    } catch (err: any) {
+      alert('Ошибка: ' + (err?.message || err))
+    }
+    setSettingsSaving(false)
   }
 
   async function updateOrderStatus(id: string, status: string) {
@@ -476,14 +505,87 @@ export default function AdminPage() {
         )}
 
         {/* ═══════════════ SETTINGS TAB ═══════════════ */}
-        {tab === 'settings' && (
-          <div style={S.card}>
-            <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 24, marginBottom: 12 }}>
-              Настройки
-            </h3>
-            <p style={{ fontSize: 13, opacity: 0.5 }}>Раздел в разработке.</p>
+        {tab === 'settings' && !loading && (
+          <div>
+            <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.4, marginBottom: 20 }}>
+              Изображения сайта
+            </p>
+
+            {/* Главная страница */}
+            <div style={{ ...S.card, marginBottom: 16 }}>
+              <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 22, marginBottom: 16 }}>
+                Главная страница
+              </h3>
+              <SettingField label="Фоновое изображение (hero)" k="hero_bg" settings={settings} setSettings={setSettings} />
+            </div>
+
+            {/* Контакты */}
+            <div style={{ ...S.card, marginBottom: 16 }}>
+              <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 22, marginBottom: 16 }}>
+                Блок контактов
+              </h3>
+              <div style={S.grid2}>
+                <SettingField label="Картинка 1" k="contact_img_1" settings={settings} setSettings={setSettings} />
+                <SettingField label="Картинка 2" k="contact_img_2" settings={settings} setSettings={setSettings} />
+                <SettingField label="Картинка 3" k="contact_img_3" settings={settings} setSettings={setSettings} />
+                <SettingField label="Картинка 4" k="contact_img_4" settings={settings} setSettings={setSettings} />
+              </div>
+            </div>
+
+            {/* Баннеры меню */}
+            <div style={{ ...S.card, marginBottom: 16 }}>
+              <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 22, marginBottom: 16 }}>
+                Баннеры в мега-меню
+              </h3>
+              <div style={S.grid2}>
+                <SettingField label="Бельё" k="menu_banner_lingerie" settings={settings} setSettings={setSettings} />
+                <SettingField label="Купальники" k="menu_banner_swim" settings={settings} setSettings={setSettings} />
+                <SettingField label="Одежда" k="menu_banner_clothes" settings={settings} setSettings={setSettings} />
+                <SettingField label="Колготки" k="menu_banner_tights" settings={settings} setSettings={setSettings} />
+                <SettingField label="Мужчинам" k="menu_banner_men" settings={settings} setSettings={setSettings} />
+                <SettingField label="Детям" k="menu_banner_kids" settings={settings} setSettings={setSettings} />
+              </div>
+            </div>
+
+            {/* Save button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 24 }}>
+              <button onClick={saveSettings} disabled={settingsSaving} style={{ ...S.btn, ...S.btnDark, opacity: settingsSaving ? 0.6 : 1 }}>
+                {settingsSaving ? 'Сохранение...' : 'Сохранить настройки'}
+              </button>
+              {settingsSaved && <span style={{ fontSize: 13, color: '#4ade80' }}>✓ Сохранено</span>}
+            </div>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Settings field with URL input + preview ──────────────────────────────
+function SettingField({
+  label, k, settings, setSettings,
+}: {
+  label: string
+  k: string
+  settings: Record<string, string>
+  setSettings: React.Dispatch<React.SetStateAction<Record<string, string>>>
+}) {
+  const value = settings[k] || ''
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <label style={{ display: 'block', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.5, marginBottom: 6 }}>
+        {label}
+      </label>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+        <div style={{ width: 64, height: 64, borderRadius: 8, background: '#e8d5ce', overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(0,0,0,0.08)' }}>
+          {value && <img src={value} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0' }} />}
+        </div>
+        <input
+          style={{ flex: 1, padding: '10px 14px', border: '1px solid rgba(0,0,0,0.15)', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: 'white', boxSizing: 'border-box' }}
+          value={value}
+          placeholder="https://... ссылка на картинку"
+          onChange={e => setSettings(s => ({ ...s, [k]: e.target.value }))}
+        />
       </div>
     </div>
   )
