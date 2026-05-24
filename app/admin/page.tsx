@@ -6,7 +6,7 @@ type Product = {
   id: string
   name: string
   slug: string
-  description?: string   // ← добавь эту строку
+  description?: string
   price: number
   price_old?: number
   in_stock: boolean
@@ -37,17 +37,17 @@ type Order = {
 type Category = { id: string; name: string; slug: string }
 
 const STATUS_LABELS: Record<string, string> = {
-  new: 'Новый',
-  confirmed: 'Подтверждён',
-  shipping: 'Доставляется',
+  pending: 'Новый',
+  paid: 'Оплачен',
+  shipped: 'Отправлен',
   delivered: 'Доставлен',
   cancelled: 'Отменён',
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  new: '#c084fc',
-  confirmed: '#60a5fa',
-  shipping: '#fb923c',
+  pending: '#c084fc',
+  paid: '#60a5fa',
+  shipped: '#fb923c',
   delivered: '#4ade80',
   cancelled: '#f87171',
 }
@@ -107,7 +107,7 @@ export default function AdminPage() {
   useEffect(() => { setMounted(true) }, [])
   if (!mounted) return null
 
-  const newOrdersCount = orders.filter(o => o.status === 'new').length
+  const newOrdersCount = orders.filter(o => o.status === 'pending').length
 
   async function getSupabase() {
     const { createClient } = await import('@supabase/supabase-js')
@@ -132,14 +132,20 @@ export default function AdminPage() {
     setLoading(true)
     try {
       const sb = await getSupabase()
-      const [{ data: p }, ordersRes, { data: c }] = await Promise.all([
+      const [prodRes, ordersRes, catRes] = await Promise.allSettled([
         sb.from('products').select('*, categories(*), product_variants(size)').order('created_at', { ascending: false }),
         fetch('/api/admin/orders').then(r => r.json()),
         sb.from('categories').select('*').order('name'),
       ])
-      setProducts(p || [])
-      setOrders(Array.isArray(ordersRes) ? ordersRes : [])
-      setCategories(c || [])
+
+      if (prodRes.status === 'fulfilled') setProducts(prodRes.value.data || [])
+      if (catRes.status === 'fulfilled') setCategories(catRes.value.data || [])
+      if (ordersRes.status === 'fulfilled' && Array.isArray(ordersRes.value)) {
+        setOrders(ordersRes.value)
+      } else {
+        setOrders([])
+        if (ordersRes.status === 'fulfilled') console.error('Orders API error:', ordersRes.value)
+      }
     } catch (err) { console.error(err) }
     setLoading(false)
   }
