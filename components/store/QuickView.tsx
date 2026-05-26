@@ -7,23 +7,34 @@ import { useCart } from '@/lib/cart'
 const CARD_BG = ['linear-gradient(165deg,#f3c8be,#d99c8e)','linear-gradient(165deg,#ead0c4,#d4a094)','linear-gradient(165deg,#f5d8d0,#d8a89c)']
 
 const LETTER_SIZES = ['XS','S','M','L','XL','2XL','3XL']
-const NUMERIC_SIZES = ['40','42','44','46','48','50','52','54','56','58','60','62','64']
+const NUMERIC_SIZES = ['38','40','42','44','46','48','50','52','54','56','58','60','62','64']
 function normalizeSize(raw: string): string | null {
   if (!raw) return null
-  const s = String(raw).trim().toUpperCase()
+  const s = String(raw).trim().toUpperCase().replace(/\s+/g, '')
   if (LETTER_SIZES.includes(s)) return s
   if (/^\d{2}$/.test(s) && NUMERIC_SIZES.includes(s)) return s
+  if (/^\d{2,3}[A-HА-З]$/.test(s)) return s
+  if (/^\d{2,3}\/\d{2}[A-HА-З]$/.test(s)) return s
   return null
 }
 function sortSizes(arr: (string | null)[]): string[] {
   const clean = arr.filter((s): s is string => !!s)
-  const order = (x: string) => {
-    const li = LETTER_SIZES.indexOf(x)
-    if (li >= 0) return li
-    const n = parseInt(x, 10)
-    return isNaN(n) ? 999 : 100 + n
+  const grp = (s: string) => LETTER_SIZES.includes(s) ? 0 : /^\d{2}$/.test(s) ? 1 : /[A-HА-З]$/.test(s) ? 2 : 3
+  const braParts = (x: string): [number, number] => {
+    const m = x.match(/^(\d{2,3})(?:\/\d{2})?([A-HА-З])$/)
+    return m ? [parseInt(m[1], 10), m[2].charCodeAt(0)] : [999, 999]
   }
-  return [...new Set(clean)].sort((a, b) => order(a) - order(b))
+  return [...new Set(clean)].sort((a, b) => {
+    const ga = grp(a), gb = grp(b)
+    if (ga !== gb) return ga - gb
+    if (ga === 0) return LETTER_SIZES.indexOf(a) - LETTER_SIZES.indexOf(b)
+    if (ga === 1) return parseInt(a, 10) - parseInt(b, 10)
+    if (ga === 2) {
+      const [ba, ca] = braParts(a), [bb, cb] = braParts(b)
+      return ba !== bb ? ba - bb : ca - cb
+    }
+    return a.localeCompare(b, 'ru')
+  })
 }
 
 export default function QuickView({ product: p, onClose, onCartOpen }: {

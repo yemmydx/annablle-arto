@@ -8,36 +8,80 @@ import QuickView from './QuickView'
 import CartDrawer from './CartDrawer'
 
 const SIZES = ['XS','S','M','L','XL','2XL','3XL']
-const NUMERIC_SIZES = ['40','42','44','46','48','50','52','54','56','58','60','62','64']
-const ALL_VALID_SIZES = [...SIZES, ...NUMERIC_SIZES]
+const NUMERIC_SIZES = ['38','40','42','44','46','48','50','52','54','56','58','60','62','64']
 
 // Распознаёт настоящий размер, отсекая артикулы/мусор (напр. "S-6219-8 к")
+// Поддержка: буквенные (S,M,L), числовые (42,44), бра-размеры (70B, 95/52G)
 function normalizeSize(raw: string): string | null {
   if (!raw) return null
-  const s = raw.trim().toUpperCase()
-  // буквенные размеры
+  const s = raw.trim().toUpperCase().replace(/\s+/g, '')
   if (SIZES.includes(s)) return s
-  // чистые числовые размеры (40..64)
   if (/^\d{2}$/.test(s) && NUMERIC_SIZES.includes(s)) return s
+  // бра-размеры: 70B, 75C, 80D, 85E, 90F, 95G, 100E и сдвоенные 95/52G
+  if (/^\d{2,3}[A-HА-З]$/.test(s)) return s
+  if (/^\d{2,3}\/\d{2}[A-HА-З]$/.test(s)) return s
   return null
 }
 
-// Сортировка размеров по-человечески: сначала буквенные, потом числовые по возрастанию
+// Определяет тип размера для группировки (как в фильтре АА)
+function sizeGroup(s: string): 'letter' | 'numeric' | 'bra' | 'other' {
+  if (SIZES.includes(s)) return 'letter'
+  if (/^\d{2}$/.test(s)) return 'numeric'
+  if (/^\d{2,3}(\/\d{2})?[A-HА-З]$/.test(s)) return 'bra'
+  return 'other'
+}
+
+// Сортировка размеров: буквенные → числовые → бра-размеры (по обхвату, потом по чашке)
 function sortSizes(arr: string[]): string[] {
-  const order = (x: string) => {
-    const li = SIZES.indexOf(x)
-    if (li >= 0) return li
-    const n = parseInt(x, 10)
-    return isNaN(n) ? 999 : 100 + n
+  const groupRank = { letter: 0, numeric: 1, bra: 2, other: 3 }
+  const braParts = (x: string) => {
+    const m = x.match(/^(\d{2,3})(?:\/\d{2})?([A-HА-З])$/)
+    if (!m) return [999, 999] as [number, number]
+    return [parseInt(m[1], 10), m[2].charCodeAt(0)] as [number, number]
   }
-  return [...new Set(arr)].sort((a, b) => order(a) - order(b))
+  return [...new Set(arr)].sort((a, b) => {
+    const ga = sizeGroup(a), gb = sizeGroup(b)
+    if (ga !== gb) return groupRank[ga] - groupRank[gb]
+    if (ga === 'letter') return SIZES.indexOf(a) - SIZES.indexOf(b)
+    if (ga === 'numeric') return parseInt(a, 10) - parseInt(b, 10)
+    if (ga === 'bra') {
+      const [ba, ca] = braParts(a), [bb, cb] = braParts(b)
+      return ba !== bb ? ba - bb : ca - cb
+    }
+    return a.localeCompare(b, 'ru')
+  })
+}
+
+// Палитра цветов: сопоставление названия → hex для цветных кружков (как в фильтре АА)
+const COLOR_SWATCHES: { match: RegExp; hex: string }[] = [
+  { match: /чёрн|черн/i, hex: '#2b2b2b' },
+  { match: /бел|молочн/i, hex: '#f5f0eb' },
+  { match: /беж|пудр|нюд|телесн/i, hex: '#e3c9b6' },
+  { match: /красн|алый|вишн/i, hex: '#c0392b' },
+  { match: /розов|пудров/i, hex: '#e8a0b0' },
+  { match: /малинов|фукси/i, hex: '#c2185b' },
+  { match: /жёлт|желт|горчичн/i, hex: '#e6c84f' },
+  { match: /синий|тёмно-син|темно-син|лазурн|васильк/i, hex: '#3b5b92' },
+  { match: /голуб|небесн/i, hex: '#8fc1e0' },
+  { match: /зелён|зелен|изумруд|мят/i, hex: '#5a9e6f' },
+  { match: /фиолет|сирен|лилов|пурпур/i, hex: '#8a5a9e' },
+  { match: /серый|сер\b|графит|стальн/i, hex: '#9a9a9a' },
+  { match: /коричн|шоколад|кофе|капучин/i, hex: '#7a5240' },
+  { match: /оранж|терракот|персик|коралл/i, hex: '#e08a4f' },
+  { match: /бордов|марсал|винн/i, hex: '#7a2030' },
+  { match: /золот|шампань/i, hex: '#d4af6a' },
+]
+
+function colorHex(name: string): string {
+  for (const { match, hex } of COLOR_SWATCHES) if (match.test(name)) return hex
+  return '#cbb8aa' // нейтральный по умолчанию
 }
 
 // Отсекает мусор из названий цветов (артикулы, описания, слишком длинные строки)
 function isValidColor(raw: string): boolean {
   if (!raw) return false
   const c = raw.trim()
-  if (c.length < 2 || c.length > 22) return false        // описания/комплекты слишком длинные
+  if (c.length < 2 || c.length > 24) return false        // описания/комплекты слишком длинные
   if (/\d{3,}/.test(c)) return false                      // артикулы с длинными числами
   if (/[a-zA-Z]-\d/.test(c)) return false                 // паттерн артикула типа S-6219
   if (/комплект|жакет|брюки|\(|\)/i.test(c)) return false // описания товара
@@ -161,17 +205,21 @@ export default function CatalogClient({ products, categories, activeCategory, se
           </div>
 
           <div className="filter-item">
-            <div style={{fontSize:10,opacity:0.5,marginBottom:8,fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.12em',textTransform:'uppercase'}}>Размер</div>
-            <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-              {availableSizes.map(s => (
-                <button key={s} onClick={() => toggleSize(s)} style={{
-                  padding:'6px 12px',borderRadius:999,
-                  border:`1px solid ${activeSizes.includes(s) ? 'var(--ink)' : 'rgba(58,40,40,0.2)'}`,
-                  background: activeSizes.includes(s) ? 'var(--ink)' : 'transparent',
-                  color: activeSizes.includes(s) ? 'var(--cream)' : 'var(--ink)',
-                  fontFamily:'inherit',fontSize:12,cursor:'pointer',transition:'all .2s',
-                }}>{s}</button>
-              ))}
+            <div style={{fontSize:10,opacity:0.5,marginBottom:10,fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.12em',textTransform:'uppercase'}}>Размер</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(46px, 1fr))',gap:6}}>
+              {availableSizes.map(s => {
+                const on = activeSizes.includes(s)
+                return (
+                  <button key={s} onClick={() => toggleSize(s)} style={{
+                    minHeight:38,padding:'8px 4px',borderRadius:8,
+                    border:`1px solid ${on ? 'var(--ink)' : 'rgba(58,40,40,0.18)'}`,
+                    background: on ? 'var(--ink)' : 'var(--cream)',
+                    color: on ? 'var(--cream)' : 'var(--ink)',
+                    fontFamily:'inherit',fontSize:12,fontWeight:on?600:400,cursor:'pointer',
+                    transition:'all .15s',textAlign:'center',whiteSpace:'nowrap',
+                  }}>{s}</button>
+                )
+              })}
             </div>
           </div>
 
@@ -186,17 +234,32 @@ export default function CatalogClient({ products, categories, activeCategory, se
 
           {availableColors.length > 0 && (
             <div className="filter-item">
-              <div style={{fontSize:10,opacity:0.5,marginBottom:8,fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.12em',textTransform:'uppercase'}}>Цвет</div>
-              <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                {availableColors.map(c => (
-                  <button key={c} onClick={() => toggleColor(c)} style={{
-                    padding:'6px 12px',borderRadius:999,
-                    border:`1px solid ${activeColors.includes(c) ? 'var(--ink)' : 'rgba(58,40,40,0.2)'}`,
-                    background: activeColors.includes(c) ? 'var(--ink)' : 'transparent',
-                    color: activeColors.includes(c) ? 'var(--cream)' : 'var(--ink)',
-                    fontFamily:'inherit',fontSize:12,cursor:'pointer',transition:'all .2s',
-                  }}>{c}</button>
-                ))}
+              <div style={{fontSize:10,opacity:0.5,marginBottom:10,fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.12em',textTransform:'uppercase'}}>Цвет</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 12px'}}>
+                {availableColors.map(c => {
+                  const on = activeColors.includes(c)
+                  return (
+                    <label key={c} onClick={() => toggleColor(c)} style={{
+                      display:'flex',alignItems:'center',gap:8,cursor:'pointer',
+                      fontSize:13,color:'var(--ink)',userSelect:'none',
+                    }}>
+                      <span style={{
+                        width:16,height:16,borderRadius:4,flexShrink:0,
+                        border:`1.5px solid ${on ? 'var(--ink)' : 'rgba(58,40,40,0.25)'}`,
+                        background: on ? 'var(--ink)' : 'transparent',
+                        display:'flex',alignItems:'center',justifyContent:'center',transition:'all .15s',
+                      }}>
+                        {on && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--cream)" strokeWidth="3"><path d="M5 12l5 5L20 7"/></svg>}
+                      </span>
+                      <span style={{
+                        width:16,height:16,borderRadius:'50%',flexShrink:0,
+                        background: colorHex(c),
+                        border:'1px solid rgba(58,40,40,0.15)',
+                      }} />
+                      <span style={{lineHeight:1.2,opacity:on?1:0.85}}>{c}</span>
+                    </label>
+                  )
+                })}
               </div>
             </div>
           )}

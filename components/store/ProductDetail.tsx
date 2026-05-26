@@ -12,22 +12,38 @@ import ProductDescription from './ProductDescription'
 const CARD_BG = ['linear-gradient(165deg,#f3c8be,#d99c8e)','linear-gradient(165deg,#ead0c4,#d4a094)','linear-gradient(165deg,#f5d8d0,#d8a89c)','linear-gradient(165deg,#e8c4b6,#c8907e)']
 
 const LETTER_SIZES = ['XS','S','M','L','XL','2XL','3XL']
-const NUMERIC_SIZES = ['40','42','44','46','48','50','52','54','56','58','60','62','64']
+const NUMERIC_SIZES = ['38','40','42','44','46','48','50','52','54','56','58','60','62','64']
 function normalizeSize(raw: string): string | null {
   if (!raw) return null
-  const s = String(raw).trim().toUpperCase()
+  const s = String(raw).trim().toUpperCase().replace(/\s+/g, '')
   if (LETTER_SIZES.includes(s)) return s
   if (/^\d{2}$/.test(s) && NUMERIC_SIZES.includes(s)) return s
+  if (/^\d{2,3}[A-HА-З]$/.test(s)) return s
+  if (/^\d{2,3}\/\d{2}[A-HА-З]$/.test(s)) return s
   return null
 }
+function sizeGroup(s: string): number {
+  if (LETTER_SIZES.includes(s)) return 0
+  if (/^\d{2}$/.test(s)) return 1
+  if (/^\d{2,3}(\/\d{2})?[A-HА-З]$/.test(s)) return 2
+  return 3
+}
 function sortSizes(arr: string[]): string[] {
-  const order = (x: string) => {
-    const li = LETTER_SIZES.indexOf(x)
-    if (li >= 0) return li
-    const n = parseInt(x, 10)
-    return isNaN(n) ? 999 : 100 + n
+  const braParts = (x: string): [number, number] => {
+    const m = x.match(/^(\d{2,3})(?:\/\d{2})?([A-HА-З])$/)
+    return m ? [parseInt(m[1], 10), m[2].charCodeAt(0)] : [999, 999]
   }
-  return [...new Set(arr)].sort((a, b) => order(a) - order(b))
+  return [...new Set(arr)].sort((a, b) => {
+    const ga = sizeGroup(a), gb = sizeGroup(b)
+    if (ga !== gb) return ga - gb
+    if (ga === 0) return LETTER_SIZES.indexOf(a) - LETTER_SIZES.indexOf(b)
+    if (ga === 1) return parseInt(a, 10) - parseInt(b, 10)
+    if (ga === 2) {
+      const [ba, ca] = braParts(a), [bb, cb] = braParts(b)
+      return ba !== bb ? ba - bb : ca - cb
+    }
+    return a.localeCompare(b, 'ru')
+  })
 }
 
 type ColorRow = {
@@ -190,7 +206,7 @@ export default function ProductDetail({ product: p, colors, related, collectionP
                   Таблица размеров
                 </button>
               </div>
-              <div className="size-row">
+              <div className="size-row" style={sizes.length > 8 ? {display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(52px, 1fr))',gap:8} : undefined}>
                 {sizes.map(s => (
                   <button key={s} className={`size-btn ${size === s ? 'on' : ''}`} onClick={() => setSize(s)}>{s}</button>
                 ))}
