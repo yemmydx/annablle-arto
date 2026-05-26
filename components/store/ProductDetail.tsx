@@ -11,6 +11,25 @@ import ProductDescription from './ProductDescription'
 
 const CARD_BG = ['linear-gradient(165deg,#f3c8be,#d99c8e)','linear-gradient(165deg,#ead0c4,#d4a094)','linear-gradient(165deg,#f5d8d0,#d8a89c)','linear-gradient(165deg,#e8c4b6,#c8907e)']
 
+const LETTER_SIZES = ['XS','S','M','L','XL','2XL','3XL']
+const NUMERIC_SIZES = ['40','42','44','46','48','50','52','54','56','58','60','62','64']
+function normalizeSize(raw: string): string | null {
+  if (!raw) return null
+  const s = String(raw).trim().toUpperCase()
+  if (LETTER_SIZES.includes(s)) return s
+  if (/^\d{2}$/.test(s) && NUMERIC_SIZES.includes(s)) return s
+  return null
+}
+function sortSizes(arr: string[]): string[] {
+  const order = (x: string) => {
+    const li = LETTER_SIZES.indexOf(x)
+    if (li >= 0) return li
+    const n = parseInt(x, 10)
+    return isNaN(n) ? 999 : 100 + n
+  }
+  return [...new Set(arr)].sort((a, b) => order(a) - order(b))
+}
+
 type ColorRow = {
   id: string
   product_id: string
@@ -30,19 +49,22 @@ export default function ProductDetail({ product: p, colors, related, collectionP
   const [error, setError] = useState('')
   const [cartOpen, setCartOpen] = useState(false)
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false)
+  const [zoom, setZoom] = useState<{ x: number; y: number; on: boolean }>({ x: 50, y: 50, on: false })
 
   // Активный цвет: первый из списка (или null если цветов нет — старый товар)
   const [activeColorIdx, setActiveColorIdx] = useState(0)
   const activeColor = colors[activeColorIdx] || null
 
-  // Размеры — отфильтрованные по выбранному цвету (если есть variants с color)
+  // Размеры — отфильтрованные по выбранному цвету (если есть variants с color), очищенные от мусора и отсортированные
   const sizes = useMemo(() => {
     if (!p.product_variants) return []
-    if (activeColor) {
-      const filtered = p.product_variants.filter((v: any) => v.color === activeColor.name)
-      return Array.from(new Set(filtered.map((v: any) => v.size)))
-    }
-    return Array.from(new Set(p.product_variants.map((v: any) => v.size)))
+    const source = activeColor
+      ? p.product_variants.filter((v: any) => v.color === activeColor.name)
+      : p.product_variants
+    const clean = source
+      .map((v: any) => normalizeSize(v.size))
+      .filter((s: string | null): s is string => !!s)
+    return sortSizes(clean)
   }, [p.product_variants, activeColor])
 
   // Фото — для активного цвета (или общие images товара если цветов нет)
@@ -96,10 +118,27 @@ export default function ProductDetail({ product: p, colors, related, collectionP
               </div>
             ))}
           </div>
-          <div className="pdp-main" style={{background: CARD_BG[activeImg % CARD_BG.length], position:'relative', overflow:'hidden'}}>
+          <div
+            className="pdp-main"
+            style={{background: CARD_BG[activeImg % CARD_BG.length], position:'relative', overflow:'hidden', cursor: images[activeImg] ? 'zoom-in' : 'default'}}
+            onMouseEnter={() => images[activeImg] && setZoom(z => ({ ...z, on: true }))}
+            onMouseLeave={() => setZoom(z => ({ ...z, on: false }))}
+            onMouseMove={e => {
+              if (!images[activeImg]) return
+              const r = e.currentTarget.getBoundingClientRect()
+              const x = ((e.clientX - r.left) / r.width) * 100
+              const y = ((e.clientY - r.top) / r.height) * 100
+              setZoom({ x, y, on: true })
+            }}
+          >
             {images[activeImg] ? (
               <img src={images[activeImg]} alt={p.name}
-                style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
+                style={{
+                  position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',
+                  transformOrigin: `${zoom.x}% ${zoom.y}%`,
+                  transform: zoom.on ? 'scale(2)' : 'scale(1)',
+                  transition: zoom.on ? 'transform .1s ease-out' : 'transform .3s ease-out',
+                }} />
             ) : (
               <div className="ph"><div className="ph-label">[ {p.name} · вид {activeImg+1}/{Math.max(images.length,1)} ]</div></div>
             )}

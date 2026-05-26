@@ -8,6 +8,42 @@ import QuickView from './QuickView'
 import CartDrawer from './CartDrawer'
 
 const SIZES = ['XS','S','M','L','XL','2XL','3XL']
+const NUMERIC_SIZES = ['40','42','44','46','48','50','52','54','56','58','60','62','64']
+const ALL_VALID_SIZES = [...SIZES, ...NUMERIC_SIZES]
+
+// Распознаёт настоящий размер, отсекая артикулы/мусор (напр. "S-6219-8 к")
+function normalizeSize(raw: string): string | null {
+  if (!raw) return null
+  const s = raw.trim().toUpperCase()
+  // буквенные размеры
+  if (SIZES.includes(s)) return s
+  // чистые числовые размеры (40..64)
+  if (/^\d{2}$/.test(s) && NUMERIC_SIZES.includes(s)) return s
+  return null
+}
+
+// Сортировка размеров по-человечески: сначала буквенные, потом числовые по возрастанию
+function sortSizes(arr: string[]): string[] {
+  const order = (x: string) => {
+    const li = SIZES.indexOf(x)
+    if (li >= 0) return li
+    const n = parseInt(x, 10)
+    return isNaN(n) ? 999 : 100 + n
+  }
+  return [...new Set(arr)].sort((a, b) => order(a) - order(b))
+}
+
+// Отсекает мусор из названий цветов (артикулы, описания, слишком длинные строки)
+function isValidColor(raw: string): boolean {
+  if (!raw) return false
+  const c = raw.trim()
+  if (c.length < 2 || c.length > 22) return false        // описания/комплекты слишком длинные
+  if (/\d{3,}/.test(c)) return false                      // артикулы с длинными числами
+  if (/[a-zA-Z]-\d/.test(c)) return false                 // паттерн артикула типа S-6219
+  if (/комплект|жакет|брюки|\(|\)/i.test(c)) return false // описания товара
+  return true
+}
+
 const CARD_BG = ['linear-gradient(165deg,#f3c8be,#d99c8e)','linear-gradient(165deg,#ead0c4,#d4a094)','linear-gradient(165deg,#f5d8d0,#d8a89c)','linear-gradient(165deg,#e8c4b6,#c8907e)','linear-gradient(165deg,#f0c8be,#d8907e)']
 const SECTION_NAMES: Record<string, string> = {
   lingerie: 'Бельё', swim: 'Купальники', clothes: 'Одежда',
@@ -31,24 +67,39 @@ export default function CatalogClient({ products, categories, activeCategory, se
   const toggleSize = (s: string) => setActiveSizes(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s])
   const toggleColor = (c: string) => setActiveColors(p => p.includes(c) ? p.filter(x => x !== c) : [...p, c])
 
-  // Все доступные цвета среди показанных товаров
+  // Все доступные цвета среди показанных товаров (без мусора/артикулов)
   const availableColors = useMemo(() => {
     const set = new Set<string>()
     for (const p of products) {
       for (const v of p.product_variants || []) {
-        if (v.color) set.add(v.color)
+        if (v.color && isValidColor(v.color)) set.add(v.color.trim())
       }
     }
-    return Array.from(set)
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'ru'))
+  }, [products])
+
+  // Реально доступные размеры среди товаров (только валидные, отсортированы)
+  const availableSizes = useMemo(() => {
+    const set = new Set<string>()
+    for (const p of products) {
+      for (const v of p.product_variants || []) {
+        const n = normalizeSize(v.size)
+        if (n) set.add(n)
+      }
+    }
+    return sortSizes(Array.from(set))
   }, [products])
 
   const filtered = useMemo(() => {
     let list = [...products]
     if (activeSizes.length > 0) {
-      list = list.filter(p => p.product_variants?.some(v => activeSizes.includes(v.size)))
+      list = list.filter(p => p.product_variants?.some(v => {
+        const n = normalizeSize(v.size)
+        return n && activeSizes.includes(n)
+      }))
     }
     if (activeColors.length > 0) {
-      list = list.filter(p => p.product_variants?.some(v => v.color && activeColors.includes(v.color)))
+      list = list.filter(p => p.product_variants?.some(v => v.color && activeColors.includes(v.color.trim())))
     }
     list = list.filter(p => p.price <= maxPrice)
     if (sort === 'price_asc') list.sort((a, b) => a.price - b.price)
@@ -112,7 +163,7 @@ export default function CatalogClient({ products, categories, activeCategory, se
           <div className="filter-item">
             <div style={{fontSize:10,opacity:0.5,marginBottom:8,fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.12em',textTransform:'uppercase'}}>Размер</div>
             <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-              {SIZES.map(s => (
+              {availableSizes.map(s => (
                 <button key={s} onClick={() => toggleSize(s)} style={{
                   padding:'6px 12px',borderRadius:999,
                   border:`1px solid ${activeSizes.includes(s) ? 'var(--ink)' : 'rgba(58,40,40,0.2)'}`,
@@ -227,7 +278,9 @@ function CatalogCard({ product, idx, onQuick, onCartOpen }: { product: Product; 
       </div>
       <div className="card-info">
         <div>
-          <h4>{product.name}</h4>
+          <Link href={`/product/${product.slug}`} style={{textDecoration:'none',color:'inherit'}}>
+            <h4 style={{cursor:'pointer'}}>{product.name}</h4>
+          </Link>
           <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:10,textTransform:'uppercase',letterSpacing:'0.06em',opacity:0.6,marginTop:2}}>
             {(product.categories as any)?.name || ''}
           </div>
@@ -237,13 +290,21 @@ function CatalogCard({ product, idx, onQuick, onCartOpen }: { product: Product; 
           {formatPrice(product.price)}
         </div>
       </div>
-      {product.product_variants && product.product_variants.length > 0 && (
-        <div className="card-sizes">
-          {[...new Set(product.product_variants.map(v => v.size))].slice(0,5).map(s => (
-            <span key={s} className="size-chip">{s}</span>
-          ))}
-        </div>
-      )}
+      {product.product_variants && product.product_variants.length > 0 && (() => {
+        const cardSizes = sortSizes(
+          product.product_variants
+            .map(v => normalizeSize(v.size))
+            .filter((s): s is string => !!s)
+        ).slice(0, 6)
+        if (cardSizes.length === 0) return null
+        return (
+          <div className="card-sizes">
+            {cardSizes.map(s => (
+              <span key={s} className="size-chip">{s}</span>
+            ))}
+          </div>
+        )
+      })()}
     </div>
   )
 }

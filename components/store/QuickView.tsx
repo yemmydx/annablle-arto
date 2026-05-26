@@ -6,13 +6,33 @@ import { useCart } from '@/lib/cart'
 
 const CARD_BG = ['linear-gradient(165deg,#f3c8be,#d99c8e)','linear-gradient(165deg,#ead0c4,#d4a094)','linear-gradient(165deg,#f5d8d0,#d8a89c)']
 
+const LETTER_SIZES = ['XS','S','M','L','XL','2XL','3XL']
+const NUMERIC_SIZES = ['40','42','44','46','48','50','52','54','56','58','60','62','64']
+function normalizeSize(raw: string): string | null {
+  if (!raw) return null
+  const s = String(raw).trim().toUpperCase()
+  if (LETTER_SIZES.includes(s)) return s
+  if (/^\d{2}$/.test(s) && NUMERIC_SIZES.includes(s)) return s
+  return null
+}
+function sortSizes(arr: (string | null)[]): string[] {
+  const clean = arr.filter((s): s is string => !!s)
+  const order = (x: string) => {
+    const li = LETTER_SIZES.indexOf(x)
+    if (li >= 0) return li
+    const n = parseInt(x, 10)
+    return isNaN(n) ? 999 : 100 + n
+  }
+  return [...new Set(clean)].sort((a, b) => order(a) - order(b))
+}
+
 export default function QuickView({ product: p, onClose, onCartOpen }: {
   product: Product; onClose: () => void; onCartOpen: () => void
 }) {
   const { addItem } = useCart()
   const [size, setSize] = useState('')
   const [added, setAdded] = useState(false)
-  const sizes = [...new Set(p.product_variants?.map(v => v.size) || [])]
+  const sizes = sortSizes((p.product_variants || []).map(v => normalizeSize(v.size)))
 
   function handleAdd() {
     if (!size && sizes.length > 0) { alert('Выберите размер'); return }
