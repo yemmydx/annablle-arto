@@ -72,6 +72,15 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
 
   const { data: products } = await query
 
+  // Карта "название цвета → hex" из product_colors (для правильных кружков в фильтре)
+  const { data: colorRows } = await supabase
+    .from('product_colors')
+    .select('name, hex')
+  const colorHexMap: Record<string, string> = {}
+  for (const row of colorRows || []) {
+    if (row.name && row.hex) colorHexMap[row.name.trim()] = row.hex
+  }
+
   // Заголовок страницы
   let title = 'Каталог'
   let subtitle = 'все модели'
@@ -105,6 +114,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
         subtitle={subtitle}
         isNew={searchParams.new === 'true'}
         isFeatured={searchParams.featured === 'true'}
+        colorHexMap={colorHexMap}
       />
       <Footer />
     </main>
