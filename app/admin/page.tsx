@@ -15,7 +15,7 @@ type Product = {
   images: string[]
   created_at: string
   categories?: { name: string; slug: string } | null
-  product_variants?: { size: string }[]
+  product_variants?: { size: string; color?: string }[]
 }
 
 type Order = {
@@ -98,10 +98,14 @@ export default function AdminPage() {
   const [showForm, setShowForm] = useState(false)
   const [editProduct, setEditProduct] = useState<Product | null>(null)
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    name: string; description: string; price: string; price_old: string;
+    category_id: string; is_new: boolean; is_featured: boolean; in_stock: boolean;
+    colors: { name: string; hex: string; images: string; sizes: string }[];
+  }>({
     name: '', description: '', price: '', price_old: '',
     category_id: '', is_new: false, is_featured: false, in_stock: true,
-    sizes: 'XS,S,M,L,XL', images: '',
+    colors: [{ name: 'Основной', hex: '#3a2828', images: '', sizes: 'XS,S,M,L,XL' }],
   })
   const [settings, setSettings] = useState<Record<string, string>>({})
   const [settingsSaving, setSettingsSaving] = useState(false)
@@ -136,7 +140,7 @@ export default function AdminPage() {
     try {
       const sb = await getSupabase()
       const [prodRes, ordersRes, catRes, settingsRes] = await Promise.allSettled([
-        sb.from('products').select('*, categories(*), product_variants(size)').order('created_at', { ascending: false }),
+        sb.from('products').select('*, categories(*), product_variants(size, color)').order('created_at', { ascending: false }),
         fetch('/api/admin/orders').then(r => r.json()),
         sb.from('categories').select('*').order('name'),
         sb.from('site_settings').select('key, value'),
@@ -190,34 +194,88 @@ export default function AdminPage() {
 
   function openAddForm() {
     setEditProduct(null)
-    setForm({ name: '', description: '', price: '', price_old: '', category_id: categories[0]?.id || '', is_new: false, is_featured: false, in_stock: true, sizes: 'XS,S,M,L,XL', images: '' })
+    setForm({
+      name: '', description: '', price: '', price_old: '',
+      category_id: categories[0]?.id || '', is_new: false, is_featured: false, in_stock: true,
+      colors: [{ name: 'Основной', hex: '#3a2828', images: '', sizes: 'XS,S,M,L,XL' }],
+    })
     setShowForm(true)
   }
 
-  function openEditForm(p: Product) {
+  async function openEditForm(p: Product) {
     setEditProduct(p)
-    const sizes = [...new Set(p.product_variants?.map(v => v.size) || [])].join(',')
+    const sb = await getSupabase()
+    const { data: colorRows } = await sb
+      .from('product_colors')
+      .select('*')
+      .eq('product_id', p.id)
+      .order('sort_order', { ascending: true })
+
+    let colors: { name: string; hex: string; images: string; sizes: string }[]
+    if (colorRows && colorRows.length > 0) {
+      colors = colorRows.map((c: any) => {
+        const sizesForColor = (p.product_variants || [])
+          .filter((v: any) => v.color === c.name)
+          .map((v: any) => v.size)
+        const uniqueSizes = Array.from(new Set(sizesForColor))
+        return {
+          name: c.name,
+          hex: c.hex || '#3a2828',
+          images: (c.images || []).join('\n'),
+          sizes: uniqueSizes.length > 0 ? uniqueSizes.join(',') : 'XS,S,M,L,XL',
+        }
+      })
+    } else {
+      const allSizes = Array.from(new Set(p.product_variants?.map((v: any) => v.size) || []))
+      colors = [{
+        name: 'Основной', hex: '#3a2828',
+        images: (p.images || []).join('\n'),
+        sizes: allSizes.length > 0 ? allSizes.join(',') : 'XS,S,M,L,XL',
+      }]
+    }
+
     setForm({
       name: p.name, description: p.description || '', price: String(p.price),
       price_old: p.price_old ? String(p.price_old) : '',
-      category_id: (p.categories as any)?.id || '',
+      category_id: (p.categories as any)?.id || (p as any).category_id || '',
       is_new: p.is_new, is_featured: p.is_featured, in_stock: p.in_stock,
-      sizes, images: (p.images || []).join('\n'),
+      colors,
     })
     setShowForm(true)
+  }
+
+  function addColor() {
+    setForm(f => ({ ...f, colors: [...f.colors, { name: '', hex: '#3a2828', images: '', sizes: 'XS,S,M,L,XL' }] }))
+  }
+  function removeColor(idx: number) {
+    setForm(f => ({ ...f, colors: f.colors.filter((_, i) => i !== idx) }))
+  }
+  function updateColor(idx: number, field: 'name' | 'hex' | 'images' | 'sizes', value: string) {
+    setForm(f => ({ ...f, colors: f.colors.map((c, i) => i === idx ? { ...c, [field]: value } : c) }))
   }
 
   async function handleSaveProduct(e: React.FormEvent) {
     e.preventDefault()
     const sb = await getSupabase()
-    const images = form.images.split('\n').map(s => s.trim()).filter(Boolean)
-    const sizes = form.sizes.split(',').map(s => s.trim()).filter(Boolean)
-    const { createClient } = await import('@supabase/supabase-js')
-    const sbAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
     function slugify(s: string) {
       return s.toLowerCase().replace(/[^a-zа-яё0-9\s-]/gi, '').replace(/\s+/g, '-').replace(/[а-яё]/g, c => ({ а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'yo',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya' }[c] || c))
     }
+
+    // Чистим цвета: только заполненные
+    const colors = form.colors
+      .map(c => ({
+        name: c.name.trim(),
+        hex: c.hex || '#3a2828',
+        images: c.images.split('\n').map(s => s.trim()).filter(Boolean),
+        sizes: c.sizes.split(',').map(s => s.trim()).filter(Boolean),
+      }))
+      .filter(c => c.name.length > 0)
+
+    if (colors.length === 0) { alert('Добавьте хотя бы один цвет с названием'); return }
+
+    // Фото товара (для превью каталога) = фото первого цвета
+    const mainImages = colors[0].images
 
     const payload = {
       name: form.name,
@@ -229,16 +287,44 @@ export default function AdminPage() {
       is_new: form.is_new,
       is_featured: form.is_featured,
       in_stock: form.in_stock,
-      images,
+      images: mainImages,
     }
 
+    // ID товара (создаём или обновляем)
+    let productId: string
     if (editProduct) {
       await sb.from('products').update(payload).eq('id', editProduct.id)
-      await sb.from('product_variants').delete().eq('product_id', editProduct.id)
-      await sb.from('product_variants').insert(sizes.map(size => ({ product_id: editProduct.id, size, in_stock: true })))
+      productId = editProduct.id
+      // чистим старые цвета и варианты
+      await sb.from('product_colors').delete().eq('product_id', productId)
+      await sb.from('product_variants').delete().eq('product_id', productId)
     } else {
-      const { data: newP } = await sb.from('products').insert(payload).select().single()
-      if (newP) await sb.from('product_variants').insert(sizes.map(size => ({ product_id: newP.id, size, in_stock: true })))
+      const { data: newP, error } = await sb.from('products').insert(payload).select().single()
+      if (error || !newP) { alert('Ошибка создания товара: ' + (error?.message || '')); return }
+      productId = newP.id
+    }
+
+    // Записываем цвета в product_colors
+    const colorRows = colors.map((c, i) => ({
+      product_id: productId,
+      name: c.name,
+      hex: c.hex,
+      images: c.images,
+      sort_order: i,
+    }))
+    const { error: colorErr } = await sb.from('product_colors').insert(colorRows)
+    if (colorErr) { alert('Ошибка сохранения цветов: ' + colorErr.message); return }
+
+    // Записываем варианты (size + color) — чтобы цвет и размер попали в фильтры каталога
+    const variantRows: { product_id: string; size: string; color: string; in_stock: boolean }[] = []
+    for (const c of colors) {
+      for (const size of c.sizes) {
+        variantRows.push({ product_id: productId, size, color: c.name, in_stock: true })
+      }
+    }
+    if (variantRows.length > 0) {
+      const { error: varErr } = await sb.from('product_variants').insert(variantRows)
+      if (varErr) { alert('Ошибка сохранения размеров: ' + varErr.message); return }
     }
 
     setShowForm(false)
@@ -248,6 +334,7 @@ export default function AdminPage() {
   async function deleteProduct(id: string) {
     if (!confirm('Удалить товар?')) return
     const sb = await getSupabase()
+    await sb.from('product_colors').delete().eq('product_id', id)
     await sb.from('product_variants').delete().eq('product_id', id)
     await sb.from('products').delete().eq('id', id)
     loadData()
@@ -449,13 +536,56 @@ export default function AdminPage() {
                       <input style={S.input} type="number" value={form.price_old} onChange={e => setForm(f => ({ ...f, price_old: e.target.value }))} />
                     </div>
                   </div>
+                  {/* ── ЦВЕТА ── */}
                   <div style={{ marginBottom: 16 }}>
-                    <label style={S.label}>Размеры (через запятую)</label>
-                    <input style={S.input} value={form.sizes} onChange={e => setForm(f => ({ ...f, sizes: e.target.value }))} placeholder="XS,S,M,L,XL" />
-                  </div>
-                  <div style={{ marginBottom: 16 }}>
-                    <label style={S.label}>Ссылки на фото (каждая с новой строки)</label>
-                    <textarea style={{ ...S.input, minHeight: 80, resize: 'vertical', fontSize: 12 }} value={form.images} onChange={e => setForm(f => ({ ...f, images: e.target.value }))} placeholder="https://..." />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                      <label style={{ ...S.label, marginBottom: 0 }}>Цвета товара</label>
+                      <button type="button" onClick={addColor} style={{ ...S.btn, ...S.btnOutline, padding: '5px 12px', fontSize: 12 }}>+ Добавить цвет</button>
+                    </div>
+
+                    {form.colors.map((c, idx) => (
+                      <div key={idx} style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 10, padding: 16, marginBottom: 12, background: 'rgba(0,0,0,0.015)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                          <span style={{ fontSize: 12, opacity: 0.5, fontFamily: "'JetBrains Mono', monospace" }}>Цвет {idx + 1}</span>
+                          {form.colors.length > 1 && (
+                            <button type="button" onClick={() => removeColor(idx)} style={{ background: '#fee2e2', color: '#991b1b', border: 'none', borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>✕ Удалить цвет</button>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'flex-end' }}>
+                          <div style={{ flex: 1 }}>
+                            <label style={S.label}>Название цвета *</label>
+                            <input style={S.input} value={c.name} onChange={e => updateColor(idx, 'name', e.target.value)} placeholder="Чёрный, Бежевый, Красный..." />
+                          </div>
+                          <div>
+                            <label style={S.label}>Оттенок</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <input type="color" value={c.hex} onChange={e => updateColor(idx, 'hex', e.target.value)} style={{ width: 44, height: 40, padding: 2, border: '1px solid rgba(0,0,0,0.15)', borderRadius: 8, cursor: 'pointer', background: 'white' }} />
+                              <input style={{ ...S.input, width: 90 }} value={c.hex} onChange={e => updateColor(idx, 'hex', e.target.value)} placeholder="#000000" />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ marginBottom: 12 }}>
+                          <label style={S.label}>Размеры этого цвета (через запятую)</label>
+                          <input style={S.input} value={c.sizes} onChange={e => updateColor(idx, 'sizes', e.target.value)} placeholder="XS,S,M,L,XL или 70B,75C,80D" />
+                        </div>
+
+                        <div>
+                          <label style={S.label}>Фото этого цвета (каждая ссылка с новой строки)</label>
+                          <textarea style={{ ...S.input, minHeight: 70, resize: 'vertical', fontSize: 12 }} value={c.images} onChange={e => updateColor(idx, 'images', e.target.value)} placeholder="https://..." />
+                          {c.images.split('\n').map(s => s.trim()).filter(Boolean).length > 0 && (
+                            <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                              {c.images.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 6).map((url, i) => (
+                                <div key={i} style={{ width: 40, height: 52, borderRadius: 6, overflow: 'hidden', background: '#e8d5ce', flexShrink: 0 }}>
+                                  <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.opacity = '0.2' }} />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                   <div style={{ display: 'flex', gap: 20, marginBottom: 24 }}>
                     {[['is_new', 'Новинка'], ['is_featured', 'Хит'], ['in_stock', 'В наличии']].map(([key, label]) => (
