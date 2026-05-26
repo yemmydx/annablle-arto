@@ -77,6 +77,14 @@ function colorHex(name: string): string {
   return '#cbb8aa' // нейтральный по умолчанию
 }
 
+// Убирает номера/артикулы из названия цвета: "01 черный" → "черный", "06/24 красный голубой" → "красный голубой"
+function cleanColorName(raw: string): string {
+  return raw
+    .replace(/^\s*\d+(\/\d+)?\s*/, '')  // ведущий номер "01 " или "06/24 "
+    .replace(/\s{2,}/g, ' ')
+    .trim() || raw.trim()
+}
+
 // Отсекает мусор из названий цветов (артикулы, описания, слишком длинные строки)
 function isValidColor(raw: string): boolean {
   if (!raw) return false
@@ -94,11 +102,12 @@ const SECTION_NAMES: Record<string, string> = {
   tights: 'Колготки', men: 'Мужчинам', kids: 'Детям',
 }
 
-export default function CatalogClient({ products, categories, activeCategory, section, collection, title: titleProp, subtitle: subtitleProp, isNew, isFeatured }: {
+export default function CatalogClient({ products, categories, activeCategory, section, collection, title: titleProp, subtitle: subtitleProp, isNew, isFeatured, colorHexMap = {} }: {
   products: Product[]; categories: Category[]; activeCategory?: string;
   section?: string; collection?: string;
   title?: string; subtitle?: string;
-  isNew?: boolean; isFeatured?: boolean
+  isNew?: boolean; isFeatured?: boolean;
+  colorHexMap?: Record<string, string>
 }) {
   const { addItem } = useCart()
   const [activeSizes, setActiveSizes] = useState<string[]>([])
@@ -238,6 +247,7 @@ export default function CatalogClient({ products, categories, activeCategory, se
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 12px'}}>
                 {availableColors.map(c => {
                   const on = activeColors.includes(c)
+                  const dot = colorHexMap[c] || colorHexMap[c.trim()] || colorHex(c)
                   return (
                     <label key={c} onClick={() => toggleColor(c)} style={{
                       display:'flex',alignItems:'center',gap:8,cursor:'pointer',
@@ -253,10 +263,10 @@ export default function CatalogClient({ products, categories, activeCategory, se
                       </span>
                       <span style={{
                         width:16,height:16,borderRadius:'50%',flexShrink:0,
-                        background: colorHex(c),
+                        background: dot,
                         border:'1px solid rgba(58,40,40,0.15)',
                       }} />
-                      <span style={{lineHeight:1.2,opacity:on?1:0.85}}>{c}</span>
+                      <span style={{lineHeight:1.2,opacity:on?1:0.85}}>{cleanColorName(c)}</span>
                     </label>
                   )
                 })}

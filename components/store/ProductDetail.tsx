@@ -46,6 +46,10 @@ function sortSizes(arr: string[]): string[] {
   })
 }
 
+function cleanColorName(raw: string): string {
+  return raw.replace(/^\s*\d+(\/\d+)?\s*/, '').replace(/\s{2,}/g, ' ').trim() || raw.trim()
+}
+
 type ColorRow = {
   id: string
   product_id: string
@@ -180,7 +184,7 @@ export default function ProductDetail({ product: p, colors, related, collectionP
           {colors.length > 0 && (
             <div className="pdp-row">
               <div className="head">
-                <span>Цвет: {activeColor?.name || '—'}</span>
+                <span>Цвет: {activeColor ? cleanColorName(activeColor.name) : '—'}</span>
               </div>
               <div className="color-row">
                 {colors.map((c, i) => (
@@ -189,8 +193,8 @@ export default function ProductDetail({ product: p, colors, related, collectionP
                     onClick={() => pickColor(i)}
                     className={`color-swatch ${i === activeColorIdx ? 'on' : ''}`}
                     style={{ background: c.hex }}
-                    title={c.name}
-                    aria-label={`Выбрать цвет ${c.name}`}
+                    title={cleanColorName(c.name)}
+                    aria-label={`Выбрать цвет ${cleanColorName(c.name)}`}
                   />
                 ))}
               </div>
