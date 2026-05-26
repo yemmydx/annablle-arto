@@ -316,10 +316,10 @@ export default function AdminPage() {
     if (colorErr) { alert('Ошибка сохранения цветов: ' + colorErr.message); return }
 
     // Записываем варианты (size + color) — чтобы цвет и размер попали в фильтры каталога
-    const variantRows: { product_id: string; size: string; color: string; in_stock: boolean }[] = []
+    const variantRows: { product_id: string; size: string; color: string }[] = []
     for (const c of colors) {
       for (const size of c.sizes) {
-        variantRows.push({ product_id: productId, size, color: c.name, in_stock: true })
+        variantRows.push({ product_id: productId, size, color: c.name })
       }
     }
     if (variantRows.length > 0) {
