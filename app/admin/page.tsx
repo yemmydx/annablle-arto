@@ -124,6 +124,7 @@ export default function AdminPage() {
   const [settingsSaved, setSettingsSaved] = useState(false)
   const [uploadingColorIdx, setUploadingColorIdx] = useState<number | null>(null)
   const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 })
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => { setMounted(true) }, [])
   if (!mounted) return null
@@ -561,13 +562,68 @@ export default function AdminPage() {
         )}
 
         {/* ═══════════════ PRODUCTS TAB ═══════════════ */}
-        {tab === 'products' && !loading && (
+        {tab === 'products' && !loading && (() => {
+          const q = searchQuery.trim().toLowerCase()
+          const filteredProducts = q
+            ? products.filter(p =>
+                p.name.toLowerCase().includes(q) ||
+                p.slug.toLowerCase().includes(q) ||
+                ((p.categories as any)?.name || '').toLowerCase().includes(q)
+              )
+            : products
+          return (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.4 }}>
-                Все товары ({products.length})
+                Все товары ({products.length}){q && ` — найдено: ${filteredProducts.length}`}
               </p>
               <button onClick={openAddForm} style={{ ...S.btn, ...S.btnDark }}>+ Добавить товар</button>
+            </div>
+
+            {/* Search bar */}
+            <div style={{ marginBottom: 20, position: 'relative' }}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="🔍 Поиск по названию, slug или категории..."
+                style={{
+                  width: '100%',
+                  padding: '12px 40px 12px 16px',
+                  border: '1px solid rgba(0,0,0,0.15)',
+                  borderRadius: 10,
+                  fontSize: 14,
+                  fontFamily: 'inherit',
+                  background: 'white',
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                }}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  style={{
+                    position: 'absolute',
+                    right: 10,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(0,0,0,0.05)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: 26,
+                    height: 26,
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title="Очистить"
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
             {/* Product form */}
@@ -689,7 +745,12 @@ export default function AdminPage() {
             )}
 
             {/* Products list */}
-            {products.map(p => (
+            {filteredProducts.length === 0 && q && (
+              <div style={{ ...S.card, textAlign: 'center', padding: '40px 20px', opacity: 0.5 }}>
+                Ничего не найдено по запросу «{searchQuery}»
+              </div>
+            )}
+            {filteredProducts.map(p => (
               <div key={p.id} style={{ ...S.card, display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ width: 48, height: 64, borderRadius: 8, background: '#e8d5ce', overflow: 'hidden', flexShrink: 0 }}>
                   {p.images?.[0] && <img src={p.images[0]} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
@@ -713,7 +774,8 @@ export default function AdminPage() {
               </div>
             ))}
           </div>
-        )}
+          )
+        })()}
 
         {/* ═══════════════ SETTINGS TAB ═══════════════ */}
         {tab === 'settings' && !loading && (
