@@ -156,7 +156,8 @@ export default function AdminPage() {
       if (catRes.status === 'fulfilled') setCategories(catRes.value.data || [])
       if (settingsRes.status === 'fulfilled') {
         const map: Record<string, string> = {}
-        for (const row of settingsRes.value.data || []) {
+        const rows = (settingsRes.value as any).data || []
+        for (const row of rows) {
           if (row.value) map[row.key] = row.value
         }
         setSettings(map)
