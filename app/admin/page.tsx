@@ -256,27 +256,9 @@ export default function AdminPage() {
     setForm(f => ({ ...f, colors: f.colors.map((c, i) => i === idx ? { ...c, [field]: value } : c) }))
   }
 
-  // Сжимаем картинку через canvas (макс. сторона 1600px, jpeg 85%)
+  // Просто возвращаем файл как есть — без сжатия
   async function compressImage(file: File): Promise<Blob> {
-    const dataUrl = await new Promise<string>((res, rej) => {
-      const r = new FileReader(); r.onload = () => res(r.result as string); r.onerror = rej; r.readAsDataURL(file)
-    })
-    const img = await new Promise<HTMLImageElement>((res, rej) => {
-      const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = dataUrl
-    })
-    const MAX = 1600
-    let { width, height } = img
-    if (width > MAX || height > MAX) {
-      const scale = MAX / Math.max(width, height)
-      width = Math.round(width * scale); height = Math.round(height * scale)
-    }
-    const canvas = document.createElement('canvas')
-    canvas.width = width; canvas.height = height
-    const ctx = canvas.getContext('2d')!
-    ctx.drawImage(img, 0, 0, width, height)
-    return await new Promise<Blob>((res, rej) => {
-      canvas.toBlob(b => b ? res(b) : rej(new Error('compress failed')), 'image/jpeg', 0.85)
-    })
+    return file
   }
 
   async function uploadColorPhotos(colorIdx: number, files: FileList | null) {
@@ -299,11 +281,11 @@ export default function AdminPage() {
         console.log('Compressing:', file.name)
         const compressed = await compressImage(file)
         console.log('Compressed size:', compressed.size)
-        const ext = 'jpg'
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
         const path = `products/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
         console.log('Uploading to path:', path)
         const { error } = await sb.storage.from('product-images').upload(path, compressed, {
-          contentType: 'image/jpeg', upsert: false,
+          contentType: file.type, upsert: false,
         })
         if (error) {
           console.error('Upload error full:', JSON.stringify(error))
