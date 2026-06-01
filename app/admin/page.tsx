@@ -1,6 +1,18 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { createClient } from '@supabase/supabase-js'
+
+let _sb: ReturnType<typeof createClient> | null = null
+function getSupabaseClient() {
+  if (!_sb) {
+    _sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  }
+  return _sb
+}
 
 type Product = {
   id: string
@@ -118,14 +130,6 @@ export default function AdminPage() {
 
   const newOrdersCount = orders.filter(o => o.status === 'pending').length
 
-  async function getSupabase() {
-    const { createClient } = await import('@supabase/supabase-js')
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-  }
-
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     const res = await fetch('/api/admin-auth', {
@@ -140,7 +144,7 @@ export default function AdminPage() {
   async function loadData() {
     setLoading(true)
     try {
-      const sb = await getSupabase()
+      const sb = getSupabaseClient()
       const [prodRes, ordersRes, catRes, settingsRes] = await Promise.allSettled([
         sb.from('products').select('*, categories(*), product_variants(size, color)').order('created_at', { ascending: false }),
         fetch('/api/admin/orders').then(r => r.json()),
@@ -206,7 +210,7 @@ export default function AdminPage() {
 
   async function openEditForm(p: Product) {
     setEditProduct(p)
-    const sb = await getSupabase()
+    const sb = getSupabaseClient()
     const { data: colorRows } = await sb
       .from('product_colors')
       .select('*')
@@ -267,7 +271,7 @@ export default function AdminPage() {
     setUploadingColorIdx(colorIdx)
     setUploadProgress({ done: 0, total: files.length })
 
-    const sb = await getSupabase()
+    const sb = getSupabaseClient()
     console.log('uploadColorPhotos: supabase client created')
     const uploadedUrls: string[] = []
 
@@ -319,7 +323,7 @@ export default function AdminPage() {
 
   async function handleSaveProduct(e: React.FormEvent) {
     e.preventDefault()
-    const sb = await getSupabase()
+    const sb = getSupabaseClient()
 
     function slugify(s: string) {
       return s.toLowerCase().replace(/[^a-zа-яё0-9\s-]/gi, '').replace(/\s+/g, '-').replace(/[а-яё]/g, c => ({ а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'yo',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya' }[c] || c))
@@ -396,7 +400,7 @@ export default function AdminPage() {
 
   async function deleteProduct(id: string) {
     if (!confirm('Удалить товар?')) return
-    const sb = await getSupabase()
+    const sb = getSupabaseClient()
     await sb.from('product_colors').delete().eq('product_id', id)
     await sb.from('product_variants').delete().eq('product_id', id)
     await sb.from('products').delete().eq('id', id)
