@@ -361,7 +361,7 @@ export default function AdminPage() {
     // ID товара (создаём или обновляем)
     let productId: string
     if (editProduct) {
-      await sb.from('products').update(payload).eq('id', editProduct.id)
+      await sb.from('products').update(payload as any).eq('id', editProduct.id)
       productId = editProduct.id
       // чистим старые цвета и варианты
       await sb.from('product_colors').delete().eq('product_id', productId)
