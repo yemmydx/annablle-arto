@@ -110,6 +110,8 @@ export default function AdminPage() {
   const [settings, setSettings] = useState<Record<string, string>>({})
   const [settingsSaving, setSettingsSaving] = useState(false)
   const [settingsSaved, setSettingsSaved] = useState(false)
+  const [uploadingColorIdx, setUploadingColorIdx] = useState<number | null>(null)
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 })
 
   useEffect(() => { setMounted(true) }, [])
   if (!mounted) return null
@@ -252,6 +254,74 @@ export default function AdminPage() {
   }
   function updateColor(idx: number, field: 'name' | 'hex' | 'images' | 'sizes', value: string) {
     setForm(f => ({ ...f, colors: f.colors.map((c, i) => i === idx ? { ...c, [field]: value } : c) }))
+  }
+
+  // Сжимаем картинку через canvas (макс. сторона 1600px, jpeg 85%)
+  async function compressImage(file: File): Promise<Blob> {
+    const dataUrl = await new Promise<string>((res, rej) => {
+      const r = new FileReader(); r.onload = () => res(r.result as string); r.onerror = rej; r.readAsDataURL(file)
+    })
+    const img = await new Promise<HTMLImageElement>((res, rej) => {
+      const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = dataUrl
+    })
+    const MAX = 1600
+    let { width, height } = img
+    if (width > MAX || height > MAX) {
+      const scale = MAX / Math.max(width, height)
+      width = Math.round(width * scale); height = Math.round(height * scale)
+    }
+    const canvas = document.createElement('canvas')
+    canvas.width = width; canvas.height = height
+    const ctx = canvas.getContext('2d')!
+    ctx.drawImage(img, 0, 0, width, height)
+    return await new Promise<Blob>((res, rej) => {
+      canvas.toBlob(b => b ? res(b) : rej(new Error('compress failed')), 'image/jpeg', 0.85)
+    })
+  }
+
+  async function uploadColorPhotos(colorIdx: number, files: FileList | null) {
+    if (!files || files.length === 0) return
+    setUploadingColorIdx(colorIdx)
+    setUploadProgress({ done: 0, total: files.length })
+
+    const sb = await getSupabase()
+    const uploadedUrls: string[] = []
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        if (!file.type.startsWith('image/')) {
+          console.warn('Skipping non-image:', file.name)
+          continue
+        }
+        const compressed = await compressImage(file)
+        const ext = 'jpg'
+        const path = `products/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+        const { error } = await sb.storage.from('product-images').upload(path, compressed, {
+          contentType: 'image/jpeg', upsert: false,
+        })
+        if (error) { alert('Ошибка загрузки ' + file.name + ': ' + error.message); continue }
+        const { data: pub } = sb.storage.from('product-images').getPublicUrl(path)
+        if (pub?.publicUrl) uploadedUrls.push(pub.publicUrl)
+        setUploadProgress({ done: i + 1, total: files.length })
+      }
+
+      if (uploadedUrls.length > 0) {
+        setForm(f => ({
+          ...f,
+          colors: f.colors.map((c, i) => {
+            if (i !== colorIdx) return c
+            const existing = c.images.split('\n').map(s => s.trim()).filter(Boolean)
+            return { ...c, images: [...existing, ...uploadedUrls].join('\n') }
+          }),
+        }))
+      }
+    } catch (err: any) {
+      alert('Ошибка: ' + (err?.message || err))
+    } finally {
+      setUploadingColorIdx(null)
+      setUploadProgress({ done: 0, total: 0 })
+    }
   }
 
   async function handleSaveProduct(e: React.FormEvent) {
@@ -572,8 +642,29 @@ export default function AdminPage() {
                         </div>
 
                         <div>
-                          <label style={S.label}>Фото этого цвета (каждая ссылка с новой строки)</label>
-                          <textarea style={{ ...S.input, minHeight: 70, resize: 'vertical', fontSize: 12 }} value={c.images} onChange={e => updateColor(idx, 'images', e.target.value)} placeholder="https://..." />
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                            <label style={{ ...S.label, marginBottom: 0 }}>Фото этого цвета</label>
+                            <label style={{
+                              ...S.btn, ...S.btnOutline, padding: '5px 12px', fontSize: 12, cursor: 'pointer',
+                              opacity: uploadingColorIdx === idx ? 0.5 : 1,
+                            }}>
+                              {uploadingColorIdx === idx
+                                ? `Загрузка ${uploadProgress.done}/${uploadProgress.total}...`
+                                : '📷 Загрузить с компьютера'}
+                              <input
+                                type="file" accept="image/*" multiple
+                                style={{ display: 'none' }}
+                                disabled={uploadingColorIdx !== null}
+                                onChange={e => { uploadColorPhotos(idx, e.target.files); e.target.value = '' }}
+                              />
+                            </label>
+                          </div>
+                          <textarea
+                            style={{ ...S.input, minHeight: 70, resize: 'vertical', fontSize: 12 }}
+                            value={c.images}
+                            onChange={e => updateColor(idx, 'images', e.target.value)}
+                            placeholder="Каждая ссылка с новой строки, или загрузи кнопкой выше"
+                          />
                           {c.images.split('\n').map(s => s.trim()).filter(Boolean).length > 0 && (
                             <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                               {c.images.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 6).map((url, i) => (
