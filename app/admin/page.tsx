@@ -361,13 +361,13 @@ export default function AdminPage() {
     // ID товара (создаём или обновляем)
     let productId: string
     if (editProduct) {
-      await sb.from('products').update(payload as any).eq('id', editProduct.id)
+      await (sb.from('products') as any).update(payload).eq('id', editProduct.id)
       productId = editProduct.id
       // чистим старые цвета и варианты
       await sb.from('product_colors').delete().eq('product_id', productId)
       await sb.from('product_variants').delete().eq('product_id', productId)
     } else {
-      const { data: newP, error } = await sb.from('products').insert(payload).select().single()
+      const { data: newP, error } = await (sb.from('products') as any).insert(payload).select().single()
       if (error || !newP) { alert('Ошибка создания товара: ' + (error?.message || '')); return }
       productId = newP.id
     }
@@ -380,7 +380,7 @@ export default function AdminPage() {
       images: c.images,
       sort_order: i,
     }))
-    const { error: colorErr } = await sb.from('product_colors').insert(colorRows)
+    const { error: colorErr } = await (sb.from('product_colors') as any).insert(colorRows)
     if (colorErr) { alert('Ошибка сохранения цветов: ' + colorErr.message); return }
 
     // Записываем варианты (size + color) — чтобы цвет и размер попали в фильтры каталога
@@ -391,7 +391,7 @@ export default function AdminPage() {
       }
     }
     if (variantRows.length > 0) {
-      const { error: varErr } = await sb.from('product_variants').insert(variantRows)
+      const { error: varErr } = await (sb.from('product_variants') as any).insert(variantRows)
       if (varErr) { alert('Ошибка сохранения размеров: ' + varErr.message); return }
     }
 
