@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
 type Product = {
@@ -300,7 +300,11 @@ export default function AdminPage() {
         const { error } = await sb.storage.from('product-images').upload(path, compressed, {
           contentType: 'image/jpeg', upsert: false,
         })
-        if (error) { alert('Ошибка загрузки ' + file.name + ': ' + error.message); continue }
+        if (error) {
+          console.error('Upload error full:', JSON.stringify(error))
+          alert('Ошибка загрузки ' + file.name + ': ' + error.message + '\n\nПроверь:\n1. Существует ли bucket "product-images" в Supabase Storage\n2. Есть ли политика INSERT (public upload)')
+          continue
+        }
         const { data: pub } = sb.storage.from('product-images').getPublicUrl(path)
         if (pub?.publicUrl) uploadedUrls.push(pub.publicUrl)
         setUploadProgress({ done: i + 1, total: files.length })
@@ -644,20 +648,12 @@ export default function AdminPage() {
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                             <label style={{ ...S.label, marginBottom: 0 }}>Фото этого цвета</label>
-                            <label style={{
-                              ...S.btn, ...S.btnOutline, padding: '5px 12px', fontSize: 12, cursor: 'pointer',
-                              opacity: uploadingColorIdx === idx ? 0.5 : 1,
-                            }}>
-                              {uploadingColorIdx === idx
-                                ? `Загрузка ${uploadProgress.done}/${uploadProgress.total}...`
-                                : '📷 Загрузить с компьютера'}
-                              <input
-                                type="file" accept="image/*" multiple
-                                style={{ display: 'none' }}
-                                disabled={uploadingColorIdx !== null}
-                                onChange={e => { uploadColorPhotos(idx, e.target.files); e.target.value = '' }}
-                              />
-                            </label>
+                            <UploadButton
+                              idx={idx}
+                              uploadingColorIdx={uploadingColorIdx}
+                              uploadProgress={uploadProgress}
+                              onFiles={(files) => uploadColorPhotos(idx, files)}
+                            />
                           </div>
                           <textarea
                             style={{ ...S.input, minHeight: 70, resize: 'vertical', fontSize: 12 }}
@@ -779,6 +775,45 @@ export default function AdminPage() {
         )}
       </div>
     </div>
+  )
+}
+
+// ─── Upload button with ref-based file input (avoids form/label click issues) ─
+function UploadButton({ idx, uploadingColorIdx, uploadProgress, onFiles }: {
+  idx: number
+  uploadingColorIdx: number | null
+  uploadProgress: { done: number; total: number }
+  onFiles: (files: FileList | null) => void
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const isUploading = uploadingColorIdx === idx
+  const isDisabled = uploadingColorIdx !== null
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        style={{ display: 'none' }}
+        disabled={isDisabled}
+        onChange={e => { onFiles(e.target.files); e.target.value = '' }}
+      />
+      <button
+        type="button"
+        disabled={isDisabled}
+        onClick={() => inputRef.current?.click()}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '5px 12px', fontSize: 12, cursor: isDisabled ? 'not-allowed' : 'pointer',
+          borderRadius: 999, border: '1px solid rgba(0,0,0,0.2)', background: 'transparent',
+          opacity: isDisabled ? 0.5 : 1,
+        }}
+      >
+        {isUploading ? `Загрузка ${uploadProgress.done}/${uploadProgress.total}...` : '📷 Загрузить с компьютера'}
+      </button>
+    </>
   )
 }
 
