@@ -280,11 +280,13 @@ export default function AdminPage() {
   }
 
   async function uploadColorPhotos(colorIdx: number, files: FileList | null) {
-    if (!files || files.length === 0) return
+    if (!files || files.length === 0) { console.log('uploadColorPhotos: no files'); return }
+    console.log('uploadColorPhotos: start', colorIdx, files.length, files[0].name, files[0].type, files[0].size)
     setUploadingColorIdx(colorIdx)
     setUploadProgress({ done: 0, total: files.length })
 
     const sb = await getSupabase()
+    console.log('uploadColorPhotos: supabase client created')
     const uploadedUrls: string[] = []
 
     try {
@@ -294,9 +296,12 @@ export default function AdminPage() {
           console.warn('Skipping non-image:', file.name)
           continue
         }
+        console.log('Compressing:', file.name)
         const compressed = await compressImage(file)
+        console.log('Compressed size:', compressed.size)
         const ext = 'jpg'
         const path = `products/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+        console.log('Uploading to path:', path)
         const { error } = await sb.storage.from('product-images').upload(path, compressed, {
           contentType: 'image/jpeg', upsert: false,
         })
@@ -305,7 +310,9 @@ export default function AdminPage() {
           alert('Ошибка загрузки ' + file.name + ': ' + error.message + '\n\nПроверь:\n1. Существует ли bucket "product-images" в Supabase Storage\n2. Есть ли политика INSERT (public upload)')
           continue
         }
+        console.log('Upload success, getting public URL')
         const { data: pub } = sb.storage.from('product-images').getPublicUrl(path)
+        console.log('Public URL:', pub?.publicUrl)
         if (pub?.publicUrl) uploadedUrls.push(pub.publicUrl)
         setUploadProgress({ done: i + 1, total: files.length })
       }
