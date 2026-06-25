@@ -31,17 +31,17 @@ export default function Footer() {
           </ul>
         </div>
         <div>
-          <h6>Annabelle Arto</h6>
+          <h6>POD PLATIEM</h6>
           <ul>
             <li><Link href="/about">О бренде</Link></li>
-            <li><a href="https://instagram.com/annabellearto">Instagram</a></li>
+            <li><a href="https://instagram.com/podplatiem">Instagram</a></li>
             <li><a href="https://wa.me/77001234567">WhatsApp</a></li>
             <li><a>Казахстан 🇰🇿</a></li>
           </ul>
         </div>
       </div>
       <div className="footer-bottom">
-        <span>© 2025 ANNABELLE ARTO</span>
+        <span>© 2026 POD PLATIEM</span>
         <span>КАЗАХСТАН · БЕЛЬЁ С ЛЮБОВЬЮ</span>
         <span>KZ · ₸</span>
       </div>
