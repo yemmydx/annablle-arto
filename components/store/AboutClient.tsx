@@ -44,6 +44,22 @@ export default function AboutClient() {
   const [offset, setOffset] = useState(0)
   const heroRef = useRef<HTMLDivElement>(null)
   const [heroOffset, setHeroOffset] = useState(0)
+  const [heroBg, setHeroBg] = useState<string | null>(null)
+
+  // Загружаем фон hero из настроек сайта (REST API напрямую)
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!url || !key) return
+    fetch(`${url}/rest/v1/site_settings?key=eq.hero_bg&select=value`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => {
+        if (data && data[0] && data[0].value) setHeroBg(data[0].value)
+      })
+      .catch(() => {})
+  }, [])
 
   // Конвейер — бесконечная прокрутка карточек
   useEffect(() => {
@@ -83,7 +99,13 @@ export default function AboutClient() {
 
       {/* HERO с параллаксом */}
       <div ref={heroRef} style={{ position: 'relative', height: '90vh', minHeight: 600, overflow: 'hidden', background: 'linear-gradient(135deg, var(--rose) 0%, var(--rose-deep) 100%)' }}>
-        {/* Фоновые плавающие кружки */}
+        {/* Фоновое фото (если задано в админке → Настройки → Главный баннер) */}
+        {heroBg && (
+          <>
+            <img src={heroBg} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(58,40,40,0.55) 0%, rgba(58,40,40,0.25) 55%, rgba(58,40,40,0.1) 100%)', zIndex: 1 }} />
+          </>
+        )}        {/* Фоновые плавающие кружки */}
         <div style={{ position: 'absolute', inset: 0, transform: `translateY(${heroOffset}px)`, transition: 'transform 0.1s linear' }}>
           {[
             { w: 400, h: 400, t: '-10%', l: '-5%', op: 0.15 },
@@ -95,7 +117,7 @@ export default function AboutClient() {
         </div>
 
         {/* Текст */}
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '60px 60px' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '60px 60px', zIndex: 2 }}>
           <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,247,243,0.7)', marginBottom: 20 }}>
             POD PLATIEM ✿ Казахстан
           </span>
