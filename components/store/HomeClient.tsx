@@ -87,7 +87,7 @@ export default function HomeClient({ featured, newProducts }: { featured: Produc
             <div className="ph"><div className="ph-label">[ campaign · коллекция 2025 ]</div></div>
             <div className="hero-overlay">
               <div className="hero-meta">
-                <span className="hero-tag">Annabelle Arto ✿ Капсула 01 — 2025</span>
+                <span className="hero-tag">POD PLATIEM ✿ Капсула 01 — 2025</span>
                 <span className="hero-tag">N°01 / 48</span>
               </div>
               <div>
@@ -193,7 +193,7 @@ export default function HomeClient({ featured, newProducts }: { featured: Produc
       {/* ===== ЛУКБУК ПРЕВЬЮ ===== */}
       <section>
         <div className="section-head">
-          <h2>О бренде — <em>Annabelle Arto</em></h2>
+          <h2>О бренде — <em>POD PLATIEM</em></h2>
           <Link href="/about" className="btn btn-ghost" style={{ fontSize: 13, padding: '10px 20px' }}>
             Читать историю <ArrowUR />
           </Link>
@@ -202,11 +202,11 @@ export default function HomeClient({ featured, newProducts }: { featured: Produc
           {/* Большая карточка слева */}
           <div style={{ borderRadius: 14, overflow: 'hidden', background: 'linear-gradient(135deg,#d4a094,#8a5448)', position: 'relative', cursor: 'pointer' }}
             onClick={() => window.location.href = '/about'}>
-            <div className="ph"><div className="ph-label">[ brand story · annabelle arto ]</div></div>
+            <div className="ph"><div className="ph-label">[ brand story · pod platiem ]</div></div>
             <div style={{ position: 'absolute', inset: 0, padding: 36, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', color: 'var(--cream)' }}>
               <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.8, marginBottom: 12 }}>— Манифест</span>
               <h2 style={{ fontFamily: 'Cormorant Garamond,serif', fontWeight: 300, fontSize: 48, lineHeight: 1, marginBottom: 16 }}>
-                Annabelle Arto —<br /><em style={{ fontStyle: 'italic' }}>это про тебя</em>
+                POD PLATIEM —<br /><em style={{ fontStyle: 'italic' }}>это про тебя</em>
               </h2>
               <p style={{ fontSize: 14, opacity: 0.8, lineHeight: 1.6, maxWidth: 360, marginBottom: 24 }}>
                 Бельё, в котором не хочется снимать. Свободные посадки, мягкие посадки, ткани которые ведут себя по-человечески.
@@ -264,7 +264,7 @@ export default function HomeClient({ featured, newProducts }: { featured: Produc
           <div style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24 }}>
             <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--rose-deep)' }}>— Манифест</span>
             <h2 style={{ fontFamily: 'Cormorant Garamond,serif', fontWeight: 300, fontSize: 'clamp(36px,4vw,56px)', lineHeight: 1, letterSpacing: '-0.01em' }}>
-              Annabelle Arto —<br /><em style={{ fontStyle: 'italic' }}>это про тебя</em>
+              POD PLATIEM —<br /><em style={{ fontStyle: 'italic' }}>это про тебя</em>
             </h2>
             <p style={{ color: 'var(--ink-soft)', fontSize: 15, maxWidth: 460, lineHeight: 1.8 }}>
               Бельё, в котором не хочется снимать. Свободные посадки, мягкие чашки без косточек, ткани, которые ведут себя по-человечески. Никаких обещаний про идеал — только удобство.

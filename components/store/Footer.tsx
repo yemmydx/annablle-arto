@@ -25,7 +25,7 @@ export default function Footer() {
         <div>
           <h6>Сервис</h6>
           <ul>
-            {[['Доставка и оплата','/delivery'],['Возврат товара','/returns'],['Таблица размеров','/size-guide'],['Контакты','/contacts']].map(([l,h]) => (
+            {[['Доставка и оплата','/delivery'],['Возврат товара','/returns'],['Таблица размеров','/size-guide'],['Контакты','/contacts'],['Политика конфиденциальности','/privacy'],['Публичная оферта','/offer']].map(([l,h]) => (
               <li key={h}><Link href={h}>{l}</Link></li>
             ))}
           </ul>
@@ -34,7 +34,6 @@ export default function Footer() {
           <h6>POD PLATIEM</h6>
           <ul>
             <li><Link href="/about">О бренде</Link></li>
-            <li><a href="https://instagram.com/podplatiem">Instagram</a></li>
             <li><a href="https://wa.me/77001234567">WhatsApp</a></li>
             <li><a>Казахстан 🇰🇿</a></li>
           </ul>

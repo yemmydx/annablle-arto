@@ -258,12 +258,11 @@ export default function AboutClient() {
               Найди нас
             </h2>
             <p style={{ fontSize: 15, opacity: 0.7, lineHeight: 1.8, marginBottom: 36 }}>
-              Мы в Казахстане. Онлайн — всегда. Пишите в WhatsApp или Instagram, мы отвечаем быстро.
+              Мы в Казахстане. Онлайн — всегда. Пишите в WhatsApp, мы отвечаем быстро.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {[
                 ['WhatsApp', '+7 700 123 45 67', 'https://wa.me/77001234567'],
-                ['Instagram', '@podplatiem', 'https://instagram.com/podplatiem'],
                 ['Email', 'hello@podplatiem.kz', 'mailto:hello@podplatiem.kz'],
               ].map(([label, val, href]) => (
                 <a key={label} href={href} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 0', borderBottom: '1px solid rgba(255,247,243,0.1)', textDecoration: 'none', color: 'var(--cream)' }}>
