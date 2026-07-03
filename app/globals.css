@@ -315,3 +315,6 @@ footer{background:var(--ink);color:var(--cream);padding:72px 36px 28px;border-ra
   font-size:13px;
   color:var(--ink);
 }
+
+/* Скрыть плейсхолдеры-подписи под фото (те тёмные пилюли [ ... ]) */
+.ph-label{display:none;}
