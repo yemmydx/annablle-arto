@@ -10,9 +10,17 @@ export default function Header() {
   const [mounted, setMounted] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [mExpanded, setMExpanded] = useState<number | null>(null)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => setMounted(true), [])
+
+  // Блокируем прокрутку body, когда открыто мобильное меню
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [mobileOpen])
 
   // Закрываем меню с задержкой — чтобы можно было водить мышью между пунктом и панелью
   function scheduleClose() {
@@ -22,10 +30,11 @@ export default function Header() {
   function cancelClose() {
     if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null }
   }
+  function closeMobile() { setMobileOpen(false); setMExpanded(null) }
 
   // ESC закрывает меню
   useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') setOpenIndex(null) }
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') { setOpenIndex(null); setMobileOpen(false) } }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
@@ -33,23 +42,30 @@ export default function Header() {
   return (
     <>
       <header className="nav">
-        <nav className="mega-nav" onMouseLeave={scheduleClose}>
-          {MENU.map((item, i) => (
-            <MegaItem
-              key={item.label}
-              item={item}
-              isOpen={openIndex === i}
-              onOpen={() => { cancelClose(); setOpenIndex(i) }}
-            />
-          ))}
-        </nav>
+        <div className="nav-left-wrap">
+          <button className="nav-burger" onClick={() => setMobileOpen(true)} aria-label="Открыть меню" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
+            </svg>
+          </button>
+          <nav className="mega-nav" onMouseLeave={scheduleClose}>
+            {MENU.map((item, i) => (
+              <MegaItem
+                key={item.label}
+                item={item}
+                isOpen={openIndex === i}
+                onOpen={() => { cancelClose(); setOpenIndex(i) }}
+              />
+            ))}
+          </nav>
+        </div>
 
         <Link href="/" className="brand" onMouseEnter={() => setOpenIndex(null)}>
           POD <b>PLATIEM</b>
         </Link>
 
         <div className="nav-right" onMouseEnter={() => setOpenIndex(null)}>
-          <button className="nav-icon" title="Поиск">
+          <button className="nav-icon" title="Поиск" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
             </svg>
@@ -76,13 +92,63 @@ export default function Header() {
         </div>
       </div>
 
+      {/* ===== МОБИЛЬНОЕ МЕНЮ ===== */}
+      {mobileOpen && (
+        <div className="mobile-overlay" onClick={closeMobile}>
+          <aside className="mobile-drawer" onClick={e => e.stopPropagation()}>
+            <div className="mdrawer-top">
+              <Link href="/" className="mdrawer-brand" onClick={closeMobile}>POD PLATIEM</Link>
+              <button className="mdrawer-close" onClick={closeMobile} aria-label="Закрыть" type="button">×</button>
+            </div>
+            <nav className="mdrawer-nav">
+              {MENU.map((item, i) => {
+                if (item.href && !item.columns) {
+                  return (
+                    <Link key={item.label} href={item.href} className="mdrawer-link" onClick={closeMobile}>
+                      {item.label}
+                    </Link>
+                  )
+                }
+                const expanded = mExpanded === i
+                return (
+                  <div key={item.label} className="mdrawer-group">
+                    <button className="mdrawer-grouphead" type="button" onClick={() => setMExpanded(expanded ? null : i)}>
+                      <span>{item.label}</span>
+                      <span className={`mdrawer-chev ${expanded ? 'open' : ''}`}>›</span>
+                    </button>
+                    {expanded && (
+                      <div className="mdrawer-sub">
+                        {item.href && (
+                          <Link href={item.href} className="mdrawer-sublink strong" onClick={closeMobile}>
+                            Все {item.label.toLowerCase()}
+                          </Link>
+                        )}
+                        {item.columns?.map(col => (
+                          <div key={col.title}>
+                            <div className="mdrawer-coltitle">{col.title}</div>
+                            {col.items.map(it => (
+                              <Link key={it.label} href={it.href} className="mdrawer-sublink" onClick={closeMobile}>
+                                {it.label}
+                              </Link>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </nav>
+          </aside>
+        </div>
+      )}
+
       {cartOpen && <CartDrawer onClose={() => setCartOpen(false)} />}
     </>
   )
 }
 
 function MegaItem({ item, isOpen, onOpen }: { item: MenuItem; isOpen: boolean; onOpen: () => void }) {
-  // Outlet и др. без выпадения — обычная ссылка
   if (item.href && !item.columns) {
     return <Link href={item.href} className="mega-link">{item.label}</Link>
   }
@@ -90,8 +156,6 @@ function MegaItem({ item, isOpen, onOpen }: { item: MenuItem; isOpen: boolean; o
   const colCount = item.columns?.length || 0
   const hasBanner = !!item.banner
 
-  // Если у пункта есть и href и columns — это кликабельный заголовок раздела
-  // Клик ведёт на страницу раздела, наведение раскрывает выпадашку
   return (
     <div className="mega-wrap" onMouseEnter={onOpen}>
       {item.href ? (

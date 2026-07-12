@@ -1,6 +1,7 @@
 'use client'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Product, Category } from '@/lib/supabase'
 import { formatPrice } from '@/lib/utils'
 import { useCart } from '@/lib/cart'
@@ -328,11 +329,13 @@ function CatalogCard({ product, idx, onQuick, onCartOpen }: { product: Product; 
       <div className="card-img" style={{background: CARD_BG[gi]}} onClick={() => window.location.href = `/product/${product.slug}`}>
         {product.images && product.images.length > 0 ? (
           <>
-            <img src={product.images[0]} alt={product.name}
-              style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
+            <Image src={product.images[0]} alt={product.name} fill
+              sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
+              style={{objectFit:'cover'}} />
             {product.images[1] && (
-              <img src={product.images[1]} alt={product.name} className="card-img-hover"
-                style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:0,transition:'opacity .5s'}} />
+              <Image src={product.images[1]} alt={product.name} fill className="card-img-hover"
+                sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
+                style={{objectFit:'cover',opacity:0,transition:'opacity .5s'}} />
             )}
           </>
         ) : (
