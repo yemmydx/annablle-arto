@@ -3,6 +3,7 @@ import { useCart } from '@/lib/cart'
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 import CartDrawer from './CartDrawer'
+import BrandLogo from './BrandLogo'
 import { MENU, MenuItem } from './menuData'
 
 export default function Header() {
@@ -60,8 +61,8 @@ export default function Header() {
           </nav>
         </div>
 
-        <Link href="/" className="brand" onMouseEnter={() => setOpenIndex(null)}>
-          POD <b>PLATIEM</b>
+        <Link href="/" className="brand" onMouseEnter={() => setOpenIndex(null)} aria-label="POD PLATIEM — на главную">
+          <BrandLogo height={64} />
         </Link>
 
         <div className="nav-right" onMouseEnter={() => setOpenIndex(null)}>
@@ -97,7 +98,9 @@ export default function Header() {
         <div className="mobile-overlay" onClick={closeMobile}>
           <aside className="mobile-drawer" onClick={e => e.stopPropagation()}>
             <div className="mdrawer-top">
-              <Link href="/" className="mdrawer-brand" onClick={closeMobile}>POD PLATIEM</Link>
+              <Link href="/" className="mdrawer-brand" onClick={closeMobile} aria-label="POD PLATIEM — на главную">
+                <BrandLogo height={48} />
+              </Link>
               <button className="mdrawer-close" onClick={closeMobile} aria-label="Закрыть" type="button">×</button>
             </div>
             <nav className="mdrawer-nav">
