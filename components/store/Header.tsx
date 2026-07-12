@@ -62,7 +62,7 @@ export default function Header() {
         </div>
 
         <Link href="/" className="brand" onMouseEnter={() => setOpenIndex(null)} aria-label="POD PLATIEM — на главную">
-          <BrandLogo height={64} />
+          <BrandLogo />
         </Link>
 
         <div className="nav-right" onMouseEnter={() => setOpenIndex(null)}>
@@ -99,7 +99,7 @@ export default function Header() {
           <aside className="mobile-drawer" onClick={e => e.stopPropagation()}>
             <div className="mdrawer-top">
               <Link href="/" className="mdrawer-brand" onClick={closeMobile} aria-label="POD PLATIEM — на главную">
-                <BrandLogo height={48} />
+                <BrandLogo />
               </Link>
               <button className="mdrawer-close" onClick={closeMobile} aria-label="Закрыть" type="button">×</button>
             </div>
