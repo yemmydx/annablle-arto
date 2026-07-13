@@ -431,3 +431,21 @@ html, body { max-width: 100%; overflow-x: hidden; }
 
 /* Скрыть плейсхолдеры-подписи под фото (тёмные пилюли [ ... ]) */
 .ph-label{display:none;}
+
+/* ============================================================
+   ФИКС: сетка каталога на мобиле — 2 карточки в ряд без обрезки.
+   Причина бага: колонки 1fr не сжимались уже min-content карточки
+   (длинные названия без пробелов + цена), сетку распирало за экран.
+   ============================================================ */
+.product-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
+.card{min-width:0;}
+.card-info{flex-wrap:wrap;}
+.card-info h4{overflow-wrap:anywhere;}
+
+@media (max-width: 900px){
+  .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 10px;}
+  .card-info h4{font-size:15px;}
+  .card-price{font-size:12px;}
+  .catalog-body{padding:20px 16px 60px;}
+  .catalog-head{padding:24px 16px;}
+}
