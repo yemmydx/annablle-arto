@@ -34,6 +34,7 @@ export default function Footer() {
           <h6>POD PLATIEM</h6>
           <ul>
             <li><Link href="/about">О бренде</Link></li>
+            <li><a href="https://www.instagram.com/pod_platiem.official/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
             <li><a href="https://wa.me/77001234567">WhatsApp</a></li>
             <li><a>Казахстан 🇰🇿</a></li>
           </ul>

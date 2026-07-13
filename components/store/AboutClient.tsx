@@ -263,6 +263,7 @@ export default function AboutClient() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {[
                 ['WhatsApp', '+7 700 123 45 67', 'https://wa.me/77001234567'],
+                ['Instagram', '@pod_platiem.official', 'https://www.instagram.com/pod_platiem.official/'],
                 ['Email', 'hello@podplatiem.kz', 'mailto:hello@podplatiem.kz'],
               ].map(([label, val, href]) => (
                 <a key={label} href={href} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 0', borderBottom: '1px solid rgba(255,247,243,0.1)', textDecoration: 'none', color: 'var(--cream)' }}>
