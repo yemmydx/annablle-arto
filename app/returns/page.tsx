@@ -1,9 +1,7 @@
-import type { ReactNode } from 'react'
 import LegalPage from '@/components/store/LegalPage'
 
 export const metadata = { title: 'Возврат товара — POD PLATIEM' }
 
-const F = ({ children }: { children: ReactNode }) => <span className="legal-fill">{children}</span>
 
 export default function ReturnsPage() {
   return (
@@ -63,7 +61,7 @@ export default function ReturnsPage() {
       <p>
         Письменный ответ на обращение предоставляется в срок не более 10 календарных дней.
         Денежные средства возвращаются тем же способом, которым была произведена оплата,
-        в течение <F>[___ рабочих дней]</F> после принятия товара.
+        в течение <b>10 рабочих дней</b> после принятия товара.
       </p>
     </LegalPage>
   )
