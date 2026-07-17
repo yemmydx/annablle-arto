@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@supabase/supabase-js'
 
 let _sb: ReturnType<typeof createClient> | null = null
@@ -108,6 +109,12 @@ export default function AdminPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
   const [showForm, setShowForm] = useState(false)
+
+  // блокируем прокрутку фона, пока открыта модалка формы
+  useEffect(() => {
+    document.body.style.overflow = showForm ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showForm])
   const [editProduct, setEditProduct] = useState<Product | null>(null)
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [form, setForm] = useState<{
@@ -626,9 +633,19 @@ export default function AdminPage() {
               )}
             </div>
 
-            {/* Product form */}
+            {/* Product form — модалка поверх списка, чтобы не прыгать по странице */}
             {showForm && (
-              <div style={{ ...S.card, marginBottom: 24, border: '1px solid rgba(0,0,0,0.15)' }}>
+              <div
+                onClick={e => e.target === e.currentTarget && setShowForm(false)}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(58,40,40,0.45)', backdropFilter: 'blur(4px)', zIndex: 90, display: 'grid', placeItems: 'center', padding: 20 }}
+              >
+              <div style={{ ...S.card, margin: 0, border: '1px solid rgba(0,0,0,0.15)', width: '100%', maxWidth: 860, maxHeight: '92vh', overflowY: 'auto', position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  aria-label="Закрыть"
+                  style={{ position: 'sticky', top: 0, float: 'right', width: 34, height: 34, borderRadius: 999, border: '1px solid rgba(0,0,0,0.15)', background: '#fff', cursor: 'pointer', fontSize: 18, zIndex: 2 }}
+                >×</button>
                 <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 24, marginBottom: 20 }}>
                   {editProduct ? 'Редактировать товар' : 'Новый товар'}
                 </h3>
@@ -715,7 +732,7 @@ export default function AdminPage() {
                             <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                               {c.images.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 6).map((url, i) => (
                                 <div key={i} style={{ width: 40, height: 52, borderRadius: 6, overflow: 'hidden', background: '#e8d5ce', flexShrink: 0 }}>
-                                  <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.opacity = '0.2' }} />
+                                  <img src={url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.opacity = '0.2' }} />
                                 </div>
                               ))}
                             </div>
@@ -742,6 +759,7 @@ export default function AdminPage() {
                   </div>
                 </form>
               </div>
+              </div>
             )}
 
             {/* Products list */}
@@ -752,8 +770,8 @@ export default function AdminPage() {
             )}
             {filteredProducts.map(p => (
               <div key={p.id} style={{ ...S.card, display: 'flex', alignItems: 'center', gap: 16 }}>
-                <div style={{ width: 48, height: 64, borderRadius: 8, background: '#e8d5ce', overflow: 'hidden', flexShrink: 0 }}>
-                  {p.images?.[0] && <img src={p.images[0]} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                <div style={{ width: 48, height: 64, borderRadius: 8, background: '#e8d5ce', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                  {p.images?.[0] && <Image src={p.images[0]} alt={p.name} fill sizes="48px" quality={45} style={{ objectFit: 'cover' }} />}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
