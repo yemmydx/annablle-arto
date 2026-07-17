@@ -7,6 +7,13 @@ import { useCart } from '@/lib/cart'
 import ProductGrid from './ProductGrid'
 import CartDrawer from './CartDrawer'
 import SizeGuideModal from './SizeGuideModal'
+
+// Категории, не подлежащие возврату по ст. 30 Закона РК «О защите прав потребителей»
+function isNonReturnable(p: Product): boolean {
+  const cat = (p.categories as any) || {}
+  const hay = `${cat.name || ''} ${cat.slug || ''}`.toLowerCase()
+  return ['бель', 'lingerie', 'колгот', 'чулк', 'чулоч', 'носк', 'термо', 'tights', 'hosiery', 'sock'].some(k => hay.includes(k))
+}
 import ProductDescription from './ProductDescription'
 
 const CARD_BG = ['linear-gradient(165deg,#f3c8be,#d99c8e)','linear-gradient(165deg,#ead0c4,#d4a094)','linear-gradient(165deg,#f5d8d0,#d8a89c)','linear-gradient(165deg,#e8c4b6,#c8907e)']
@@ -236,7 +243,9 @@ export default function ProductDetail({ product: p, colors, related, collectionP
               [<svg key="t" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 19c5-13 14-15 16-15 0 7-3 18-15 16M5 19l8-8"/></svg>, 'Материал', '78% полиамид · 22% эластан'],
               [<svg key="c" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>, 'Уход', 'Стирка 30°C · без отбеливания'],
               [<svg key="d" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 7h12v10H3zM15 10h4l3 3v4h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>, 'Доставка', '2–5 дней по всему Казахстану'],
-              [<svg key="r" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2z"/></svg>, 'Возврат', '30 дней · бесплатно'],
+              isNonReturnable(p)
+                ? [<svg key="r" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2z"/></svg>, 'Гарантия качества', 'обмен при производственном браке']
+                : [<svg key="r" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2z"/></svg>, 'Возврат', '14 рабочих дней'],
             ].map(([icon, title, sub], i) => (
               <div key={i} style={{display:'flex',gap:10,alignItems:'flex-start'}}>
                 <div style={{width:22,height:22,color:'var(--rose-deep)',flexShrink:0,marginTop:2}}>{icon}</div>

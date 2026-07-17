@@ -41,7 +41,7 @@ function sortSizes(arr: (string | null)[]): string[] {
 const qvCss = `
 .qv-grid{background:var(--cream);border-radius:18px;width:100%;max-width:900px;max-height:90vh;overflow:auto;display:grid;grid-template-columns:1fr 1fr;position:relative;animation:pop .3s cubic-bezier(.2,.7,.2,1);}
 .qv-photo{aspect-ratio:3/4;border-radius:18px 0 0 18px;position:relative;overflow:hidden;}
-.qv-desc{color:var(--ink-soft);font-size:13px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
+.qv-desc{color:var(--ink-soft);font-size:13px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;}
 .qv-thumbs{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;z-index:2;}
 .qv-thumb{width:44px;height:56px;border-radius:8px;overflow:hidden;position:relative;border:2px solid rgba(255,255,255,0.7);cursor:pointer;padding:0;background:none;}
 .qv-thumb.on{border-color:var(--ink);}
@@ -51,6 +51,14 @@ const qvCss = `
   .qv-info{padding:22px !important;}
 }
 `
+
+// Категории, не подлежащие возврату по ст. 30 Закона РК «О защите прав потребителей»:
+// нательное/нижнее бельё и чулочно-носочные изделия.
+function isNonReturnable(p: Product): boolean {
+  const cat = (p.categories as any) || {}
+  const hay = `${cat.name || ''} ${cat.slug || ''}`.toLowerCase()
+  return ['бель', 'lingerie', 'колгот', 'чулк', 'чулоч', 'носк', 'термо', 'tights', 'hosiery', 'sock'].some(k => hay.includes(k))
+}
 
 export default function QuickView({ product: p, onClose, onCartOpen }: {
   product: Product; onClose: () => void; onCartOpen: () => void
@@ -110,7 +118,14 @@ export default function QuickView({ product: p, onClose, onCartOpen }: {
             </div>
           </div>
 
-          {p.description && <p className="qv-desc">{p.description}</p>}
+          {p.description && (
+            <div>
+              <p className="qv-desc">{p.description}</p>
+              <a href={`/product/${p.slug}`} style={{display:'inline-block',marginTop:6,fontSize:13,color:'var(--rose-deep)',textDecoration:'underline',textUnderlineOffset:3}}>
+                Полное описание — на странице товара →
+              </a>
+            </div>
+          )}
 
           {sizes.length > 0 && (
             <div>
@@ -135,7 +150,12 @@ export default function QuickView({ product: p, onClose, onCartOpen }: {
           </div>
 
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,borderTop:'1px solid var(--line)',paddingTop:16}}>
-            {[['🚚','Доставка по KZ','2–5 дней'],['↩️','Возврат','14 рабочих дней']].map(([icon,title,sub]) => (
+            {[
+              ['🚚','Доставка по KZ','2–5 дней'],
+              isNonReturnable(p)
+                ? ['✔️','Гарантия качества','обмен при браке']
+                : ['↩️','Возврат','14 рабочих дней'],
+            ].map(([icon,title,sub]) => (
               <div key={title} style={{display:'flex',gap:8,alignItems:'flex-start'}}>
                 <span style={{fontSize:16}}>{icon}</span>
                 <div><div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{title}</div><div style={{fontSize:12,color:'var(--ink-soft)'}}>{sub}</div></div>
