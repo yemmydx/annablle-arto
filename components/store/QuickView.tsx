@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Image from 'next/image'
 import { Product } from '@/lib/supabase'
 import { formatPrice } from '@/lib/utils'
 import { useCart } from '@/lib/cart'
@@ -37,13 +38,29 @@ function sortSizes(arr: (string | null)[]): string[] {
   })
 }
 
+const qvCss = `
+.qv-grid{background:var(--cream);border-radius:18px;width:100%;max-width:900px;max-height:90vh;overflow:auto;display:grid;grid-template-columns:1fr 1fr;position:relative;animation:pop .3s cubic-bezier(.2,.7,.2,1);}
+.qv-photo{aspect-ratio:3/4;border-radius:18px 0 0 18px;position:relative;overflow:hidden;}
+.qv-desc{color:var(--ink-soft);font-size:13px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
+.qv-thumbs{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;z-index:2;}
+.qv-thumb{width:44px;height:56px;border-radius:8px;overflow:hidden;position:relative;border:2px solid rgba(255,255,255,0.7);cursor:pointer;padding:0;background:none;}
+.qv-thumb.on{border-color:var(--ink);}
+@media (max-width: 700px){
+  .qv-grid{grid-template-columns:1fr;max-width:440px;}
+  .qv-photo{border-radius:18px 18px 0 0;aspect-ratio:4/4.4;}
+  .qv-info{padding:22px !important;}
+}
+`
+
 export default function QuickView({ product: p, onClose, onCartOpen }: {
   product: Product; onClose: () => void; onCartOpen: () => void
 }) {
   const { addItem } = useCart()
   const [size, setSize] = useState('')
   const [added, setAdded] = useState(false)
+  const [imgIdx, setImgIdx] = useState(0)
   const sizes = sortSizes((p.product_variants || []).map(v => normalizeSize(v.size)))
+  const images = (p.images || []).filter(Boolean)
 
   function handleAdd() {
     if (!size && sizes.length > 0) { alert('Выберите размер'); return }
@@ -53,18 +70,36 @@ export default function QuickView({ product: p, onClose, onCartOpen }: {
   }
 
   return (
-    <div style={{position:'fixed',inset:0,background:'rgba(58,40,40,0.5)',backdropFilter:'blur(8px)',zIndex:100,display:'grid',placeItems:'center',padding:36,animation:'fadein .25s ease'}}
+    <div style={{position:'fixed',inset:0,background:'rgba(58,40,40,0.5)',backdropFilter:'blur(8px)',zIndex:100,display:'grid',placeItems:'center',padding:20,animation:'fadein .25s ease'}}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{background:'var(--cream)',borderRadius:18,width:'100%',maxWidth:900,maxHeight:'90vh',overflow:'auto',display:'grid',gridTemplateColumns:'1fr 1fr',position:'relative',animation:'pop .3s cubic-bezier(.2,.7,.2,1)'}}>
-        <button onClick={onClose} style={{position:'absolute',top:16,right:16,zIndex:2,width:36,height:36,borderRadius:999,background:'var(--cream)',border:'1px solid rgba(58,40,40,0.2)',cursor:'pointer',display:'grid',placeItems:'center',fontSize:18}}>×</button>
+      <style dangerouslySetInnerHTML={{ __html: qvCss }} />
+      <div className="qv-grid">
+        <button onClick={onClose} style={{position:'absolute',top:16,right:16,zIndex:3,width:36,height:36,borderRadius:999,background:'var(--cream)',border:'1px solid rgba(58,40,40,0.2)',cursor:'pointer',display:'grid',placeItems:'center',fontSize:18}}>×</button>
 
         {/* Фото */}
-        <div style={{aspectRatio:'3/4',background:CARD_BG[0],borderRadius:'18px 0 0 18px',position:'relative'}}>
-          <div className="ph"><div className="ph-label">[ {p.name} ]</div></div>
+        <div className="qv-photo" style={{background:CARD_BG[0]}}>
+          {images.length > 0 && (
+            <Image
+              src={images[imgIdx] || images[0]}
+              alt={p.name}
+              fill
+              sizes="(max-width:700px) 90vw, 450px"
+              style={{objectFit:'cover'}}
+            />
+          )}
+          {images.length > 1 && (
+            <div className="qv-thumbs">
+              {images.slice(0,4).map((src, i) => (
+                <button key={i} className={`qv-thumb ${i === imgIdx ? 'on' : ''}`} onClick={() => setImgIdx(i)} aria-label={`Фото ${i+1}`}>
+                  <Image src={src} alt="" fill sizes="44px" style={{objectFit:'cover'}} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Инфо */}
-        <div style={{padding:36,display:'flex',flexDirection:'column',gap:16}}>
+        <div className="qv-info" style={{padding:36,display:'flex',flexDirection:'column',gap:16}}>
           <div>
             <div className="pdp-cat">{(p.categories as any)?.name || ''}</div>
             <h2 style={{fontFamily:'Cormorant Garamond,serif',fontWeight:300,fontSize:36,lineHeight:1,marginBottom:8}}>{p.name}</h2>
@@ -75,7 +110,7 @@ export default function QuickView({ product: p, onClose, onCartOpen }: {
             </div>
           </div>
 
-          {p.description && <p style={{color:'var(--ink-soft)',fontSize:13,lineHeight:1.6}}>{p.description}</p>}
+          {p.description && <p className="qv-desc">{p.description}</p>}
 
           {sizes.length > 0 && (
             <div>
@@ -100,7 +135,7 @@ export default function QuickView({ product: p, onClose, onCartOpen }: {
           </div>
 
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,borderTop:'1px solid var(--line)',paddingTop:16}}>
-            {[['🚚','Доставка по KZ','2–5 дней'],['↩️','Возврат','30 дней']].map(([icon,title,sub]) => (
+            {[['🚚','Доставка по KZ','2–5 дней'],['↩️','Возврат','14 рабочих дней']].map(([icon,title,sub]) => (
               <div key={title} style={{display:'flex',gap:8,alignItems:'flex-start'}}>
                 <span style={{fontSize:16}}>{icon}</span>
                 <div><div style={{fontSize:13,fontWeight:500,marginBottom:2}}>{title}</div><div style={{fontSize:12,color:'var(--ink-soft)'}}>{sub}</div></div>
