@@ -1,3 +1,4 @@
+export const revalidate = 0  // всегда свежие данные: правки из админки видны сразу
 import { supabase } from '@/lib/supabase'
 import Header from '@/components/store/Header'
 import Footer from '@/components/store/Footer'
