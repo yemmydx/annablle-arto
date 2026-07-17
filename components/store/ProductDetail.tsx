@@ -1,6 +1,7 @@
 'use client'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Product } from '@/lib/supabase'
 import { formatPrice } from '@/lib/utils'
 import { useCart } from '@/lib/cart'
@@ -137,8 +138,8 @@ export default function ProductDetail({ product: p, colors, related, collectionP
                 onClick={() => setActiveImg(i)}
                 style={{background: CARD_BG[i % CARD_BG.length], position:'relative', overflow:'hidden'}}>
                 {img ? (
-                  <img src={img} alt={`${p.name} ${i+1}`}
-                    style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
+                  <Image src={img} alt={`${p.name} ${i+1}`} fill sizes="90px"
+                    style={{objectFit:'cover'}} />
                 ) : (
                   <div className="ph" style={{borderRadius:8}}></div>
                 )}
@@ -159,9 +160,11 @@ export default function ProductDetail({ product: p, colors, related, collectionP
             }}
           >
             {images[activeImg] ? (
-              <img src={images[activeImg]} alt={p.name}
+              <Image src={images[activeImg]} alt={p.name} fill priority
+                sizes="(max-width:900px) 100vw, 640px"
+                quality={85}
                 style={{
-                  position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',
+                  objectFit:'cover',
                   transformOrigin: `${zoom.x}% ${zoom.y}%`,
                   transform: zoom.on ? 'scale(2)' : 'scale(1)',
                   transition: zoom.on ? 'transform .1s ease-out' : 'transform .3s ease-out',
