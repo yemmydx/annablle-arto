@@ -149,8 +149,8 @@ export default function AdminPage() {
     else alert('Неверный пароль')
   }
 
-  async function loadData() {
-    setLoading(true)
+  async function loadData(silent = false) {
+    if (!silent) setLoading(true)
     try {
       const sb = getSupabaseClient()
       const [prodRes, ordersRes, catRes, settingsRes] = await Promise.allSettled([
@@ -177,7 +177,7 @@ export default function AdminPage() {
         if (ordersRes.status === 'fulfilled') console.error('Orders API error:', ordersRes.value)
       }
     } catch (err) { console.error(err) }
-    setLoading(false)
+    if (!silent) setLoading(false)
   }
 
   async function saveSettings() {
@@ -404,7 +404,7 @@ export default function AdminPage() {
     }
 
     setShowForm(false)
-    loadData()
+    loadData(true)  // тихо: без размонтирования списка, скролл сохраняется
   }
 
   async function deleteProduct(id: string) {
@@ -413,7 +413,7 @@ export default function AdminPage() {
     await sb.from('product_colors').delete().eq('product_id', id)
     await sb.from('product_variants').delete().eq('product_id', id)
     await sb.from('products').delete().eq('id', id)
-    loadData()
+    loadData(true)
   }
 
   // ─── LOGIN ────────────────────────────────────────────────────────────────
