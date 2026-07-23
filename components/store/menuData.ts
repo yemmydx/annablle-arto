@@ -79,6 +79,8 @@ export const MENU: MenuItem[] = [
         items: [
           { label: 'Пижамы и костюмы', href: cat('pajamas') },
           { label: 'Сорочки, халаты и платья', href: cat('robes') },
+          { label: 'Велюр', href: cat('velour') },
+          { label: 'Домашняя одежда', href: cat('homewear') },
           { label: 'Джемперы, блузы', href: cat('blouses') },
           { label: 'Боди', href: cat('bodysuit') },
           { label: 'Майки', href: cat('tops') },
@@ -166,6 +168,6 @@ export const MENU: MenuItem[] = [
   },
   {
     label: 'Outlet',
-    href: '/catalog?sale=true',
+    href: '/catalog?section=outlet',
   },
 ]

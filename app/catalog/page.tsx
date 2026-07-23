@@ -11,6 +11,7 @@ const SECTION_NAMES: Record<string, string> = {
   tights: 'Колготки',
   men: 'Мужчинам',
   kids: 'Детям',
+  outlet: 'Outlet',
 }
 
 type SP = {
