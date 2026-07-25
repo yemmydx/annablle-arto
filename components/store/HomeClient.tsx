@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Product } from '@/lib/supabase'
 import { formatPrice } from '@/lib/utils'
 import { useCart } from '@/lib/cart'
@@ -25,7 +26,7 @@ const CATS = [
 
 const PROMISE = [
   { icon: '🚚', title: 'Бесплатная доставка', sub: 'от 15 000 ₸' },
-  { icon: '↩️', title: 'Лёгкий обмен', sub: '14 рабочих дней' },
+  { icon: '↩️', title: 'Лёгкий обмен', sub: '30 дней' },
   { icon: '💳', title: 'Kaspi Pay', sub: 'Halyk · Visa · MC' },
   { icon: '✦', title: 'Размеры XS–3XL', sub: 'для всех' },
 ]
@@ -42,8 +43,23 @@ function ProductCard({ p, idx, onQuick }: { p: Product; idx: number; onQuick: ()
   return (
     <div className="card" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <div className="card-img" style={{ background: CARD_BG[gi] }} onClick={() => window.location.href = `/product/${p.slug}`}>
-        <div className="ph"><div className="ph-label">[ {(p.categories as any)?.name || ''} · {p.name} ]</div></div>
-        <div className="card-img-hover" style={{ background: 'linear-gradient(135deg,#d4a094,#b8786a)' }} />
+        {p.images && p.images[0] ? (
+          <>
+            <Image src={p.images[0]} alt={p.name} fill
+              sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
+              style={{ objectFit: 'cover' }} />
+            {p.images[1] && (
+              <Image src={p.images[1]} alt={p.name} fill className="card-img-hover"
+                sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
+                style={{ objectFit: 'cover' }} />
+            )}
+          </>
+        ) : (
+          <>
+            <div className="ph"><div className="ph-label">[ {(p.categories as any)?.name || ''} · {p.name} ]</div></div>
+            <div className="card-img-hover" style={{ background: 'linear-gradient(135deg,#d4a094,#b8786a)' }} />
+          </>
+        )}
         {p.is_new && <span className="card-tag">Новинка</span>}
         {p.price_old && !p.is_new && <span className="card-tag">−{Math.round((1 - p.price / p.price_old) * 100)}%</span>}
         <div className="card-quick">
@@ -87,7 +103,7 @@ export default function HomeClient({ featured, newProducts }: { featured: Produc
             <div className="ph"><div className="ph-label">[ campaign · коллекция 2025 ]</div></div>
             <div className="hero-overlay">
               <div className="hero-meta">
-                <span className="hero-tag">POD PLATIEM ✿ Капсула 01 — 2025</span>
+                <span className="hero-tag">Annabelle Arto ✿ Капсула 01 — 2025</span>
                 <span className="hero-tag">N°01 / 48</span>
               </div>
               <div>
@@ -193,7 +209,7 @@ export default function HomeClient({ featured, newProducts }: { featured: Produc
       {/* ===== ЛУКБУК ПРЕВЬЮ ===== */}
       <section>
         <div className="section-head">
-          <h2>О бренде — <em>POD PLATIEM</em></h2>
+          <h2>О бренде — <em>Annabelle Arto</em></h2>
           <Link href="/about" className="btn btn-ghost" style={{ fontSize: 13, padding: '10px 20px' }}>
             Читать историю <ArrowUR />
           </Link>
@@ -202,11 +218,11 @@ export default function HomeClient({ featured, newProducts }: { featured: Produc
           {/* Большая карточка слева */}
           <div style={{ borderRadius: 14, overflow: 'hidden', background: 'linear-gradient(135deg,#d4a094,#8a5448)', position: 'relative', cursor: 'pointer' }}
             onClick={() => window.location.href = '/about'}>
-            <div className="ph"><div className="ph-label">[ brand story · pod platiem ]</div></div>
+            <div className="ph"><div className="ph-label">[ brand story · annabelle arto ]</div></div>
             <div style={{ position: 'absolute', inset: 0, padding: 36, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', color: 'var(--cream)' }}>
               <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.8, marginBottom: 12 }}>— Манифест</span>
               <h2 style={{ fontFamily: 'Cormorant Garamond,serif', fontWeight: 300, fontSize: 48, lineHeight: 1, marginBottom: 16 }}>
-                POD PLATIEM —<br /><em style={{ fontStyle: 'italic' }}>это про тебя</em>
+                Annabelle Arto —<br /><em style={{ fontStyle: 'italic' }}>это про тебя</em>
               </h2>
               <p style={{ fontSize: 14, opacity: 0.8, lineHeight: 1.6, maxWidth: 360, marginBottom: 24 }}>
                 Бельё, в котором не хочется снимать. Свободные посадки, мягкие посадки, ткани которые ведут себя по-человечески.
@@ -264,7 +280,7 @@ export default function HomeClient({ featured, newProducts }: { featured: Produc
           <div style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24 }}>
             <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--rose-deep)' }}>— Манифест</span>
             <h2 style={{ fontFamily: 'Cormorant Garamond,serif', fontWeight: 300, fontSize: 'clamp(36px,4vw,56px)', lineHeight: 1, letterSpacing: '-0.01em' }}>
-              POD PLATIEM —<br /><em style={{ fontStyle: 'italic' }}>это про тебя</em>
+              Annabelle Arto —<br /><em style={{ fontStyle: 'italic' }}>это про тебя</em>
             </h2>
             <p style={{ color: 'var(--ink-soft)', fontSize: 15, maxWidth: 460, lineHeight: 1.8 }}>
               Бельё, в котором не хочется снимать. Свободные посадки, мягкие чашки без косточек, ткани, которые ведут себя по-человечески. Никаких обещаний про идеал — только удобство.
