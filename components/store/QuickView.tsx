@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { Product } from '@/lib/supabase'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, optimizeImage } from '@/lib/utils'
 import { useCart } from '@/lib/cart'
 
 const CARD_BG = ['linear-gradient(165deg,#f3c8be,#d99c8e)','linear-gradient(165deg,#ead0c4,#d4a094)','linear-gradient(165deg,#f5d8d0,#d8a89c)']
@@ -88,7 +88,7 @@ export default function QuickView({ product: p, onClose, onCartOpen }: {
         <div className="qv-photo" style={{background:CARD_BG[0]}}>
           {images.length > 0 && (
             <Image
-              src={images[imgIdx] || images[0]}
+              src={optimizeImage(images[imgIdx] || images[0], {width:700})}
               alt={p.name}
               fill
               sizes="(max-width:700px) 90vw, 450px"
@@ -99,7 +99,7 @@ export default function QuickView({ product: p, onClose, onCartOpen }: {
             <div className="qv-thumbs">
               {images.slice(0,4).map((src, i) => (
                 <button key={i} className={`qv-thumb ${i === imgIdx ? 'on' : ''}`} onClick={() => setImgIdx(i)} aria-label={`Фото ${i+1}`}>
-                  <Image src={src} alt="" fill sizes="44px" style={{objectFit:'cover'}} />
+                  <Image src={optimizeImage(src, {width:100})} alt="" fill sizes="44px" style={{objectFit:'cover'}} />
                 </button>
               ))}
             </div>

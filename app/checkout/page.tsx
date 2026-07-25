@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Header from '@/components/store/Header'
 import Footer from '@/components/store/Footer'
 import { useCart } from '@/lib/cart'
-import { formatPrice, DELIVERY_METHODS, PAYMENT_METHODS, KZ_CITIES } from '@/lib/utils'
+import { formatPrice, DELIVERY_METHODS, PAYMENT_METHODS, KZ_CITIES, optimizeImage } from '@/lib/utils'
 
 const FREE_SHIP = 15000
 const SHIP_COST = 1500
@@ -201,7 +201,7 @@ export default function CheckoutPage() {
                     return (
                       <div key={`${item.product.id}-${item.size}`} style={{ display: 'grid', gridTemplateColumns: '56px 1fr auto', gap: 12, alignItems: 'center' }}>
                         <div style={{ aspectRatio: '3/4', width: 56, borderRadius: 8, overflow: 'hidden', background: 'linear-gradient(165deg,#f3c8be,#d99c8e)', position: 'relative', flexShrink: 0 }}>
-                          {img && <img src={img} alt={item.product.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+                          {img && <img src={optimizeImage(img, {width:200})} alt={item.product.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
                           <span style={{ position: 'absolute', top: -6, right: -6, background: 'var(--ink)', color: 'var(--cream)', fontSize: 10, width: 18, height: 18, borderRadius: 999, display: 'grid', placeItems: 'center', fontFamily: 'JetBrains Mono, monospace' }}>{item.qty}</span>
                         </div>
                         <div style={{ minWidth: 0 }}>

@@ -55,3 +55,19 @@ export const KZ_CITIES = [
   'Тараз', 'Павлодар', 'Өскемен', 'Семей', 'Атырау',
   'Қостанай', 'Петропавл', 'Орал', 'Түркістан', 'Қызылорда',
 ]
+
+// Оптимизация фото через Supabase Image Transformation (Pro-тариф).
+// Публичную ссылку (.../object/public/...) превращает в трансформированную
+// (.../render/image/public/...?width=&quality=) — Supabase отдаёт лёгкий WebP на лету.
+// Внешние/пустые ссылки возвращаются без изменений.
+export function optimizeImage(
+  url: string | null | undefined,
+  opts: { width?: number; quality?: number } = {}
+): string {
+  if (!url) return ''
+  if (!url.includes('/storage/v1/object/public/')) return url
+  const { width = 600, quality = 75 } = opts
+  const base = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')
+  const sep = base.includes('?') ? '&' : '?'
+  return `${base}${sep}width=${width}&quality=${quality}`
+}
