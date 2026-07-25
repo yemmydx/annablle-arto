@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { Product } from '@/lib/supabase'
-import { formatPrice, optimizeImage } from '@/lib/utils'
+import { formatPrice } from '@/lib/utils'
 import { useCart } from '@/lib/cart'
 
 const CARD_BG = ['linear-gradient(165deg,#f3c8be,#d99c8e)','linear-gradient(165deg,#ead0c4,#d4a094)','linear-gradient(165deg,#f5d8d0,#d8a89c)']
@@ -40,14 +40,14 @@ function sortSizes(arr: (string | null)[]): string[] {
 
 const qvCss = `
 .qv-grid{background:var(--cream);border-radius:18px;width:100%;max-width:900px;max-height:90vh;overflow:auto;display:grid;grid-template-columns:1fr 1fr;position:relative;animation:pop .3s cubic-bezier(.2,.7,.2,1);}
-.qv-photo{aspect-ratio:3/4;border-radius:18px 0 0 18px;position:relative;overflow:hidden;}
+.qv-photo{aspect-ratio:2/3;border-radius:18px 0 0 18px;position:relative;overflow:hidden;background:#f6ede8;}
 .qv-desc{color:var(--ink-soft);font-size:13px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;}
 .qv-thumbs{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;z-index:2;}
 .qv-thumb{width:44px;height:56px;border-radius:8px;overflow:hidden;position:relative;border:2px solid rgba(255,255,255,0.7);cursor:pointer;padding:0;background:none;}
 .qv-thumb.on{border-color:var(--ink);}
 @media (max-width: 700px){
   .qv-grid{grid-template-columns:1fr;max-width:440px;}
-  .qv-photo{border-radius:18px 18px 0 0;aspect-ratio:4/4.4;}
+  .qv-photo{border-radius:18px 18px 0 0;aspect-ratio:3/4;}
   .qv-info{padding:22px !important;}
 }
 `
@@ -85,21 +85,21 @@ export default function QuickView({ product: p, onClose, onCartOpen }: {
         <button onClick={onClose} style={{position:'absolute',top:16,right:16,zIndex:3,width:36,height:36,borderRadius:999,background:'var(--cream)',border:'1px solid rgba(58,40,40,0.2)',cursor:'pointer',display:'grid',placeItems:'center',fontSize:18}}>×</button>
 
         {/* Фото */}
-        <div className="qv-photo" style={{background:CARD_BG[0]}}>
+        <div className="qv-photo">
           {images.length > 0 && (
             <Image
-              src={optimizeImage(images[imgIdx] || images[0], {width:1000, quality:90})}
+              src={images[imgIdx] || images[0]}
               alt={p.name}
               fill
               sizes="(max-width:700px) 90vw, 450px"
-              style={{objectFit:'cover'}}
+              style={{objectFit:'contain'}}
             />
           )}
           {images.length > 1 && (
             <div className="qv-thumbs">
               {images.slice(0,4).map((src, i) => (
                 <button key={i} className={`qv-thumb ${i === imgIdx ? 'on' : ''}`} onClick={() => setImgIdx(i)} aria-label={`Фото ${i+1}`}>
-                  <Image src={optimizeImage(src, {width:150, quality:85})} alt="" fill sizes="44px" style={{objectFit:'cover'}} />
+                  <Image src={src} alt="" fill sizes="44px" style={{objectFit:'cover'}} />
                 </button>
               ))}
             </div>
