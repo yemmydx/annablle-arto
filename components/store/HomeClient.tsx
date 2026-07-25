@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Product } from '@/lib/supabase'
-import { formatPrice, optimizeImage } from '@/lib/utils'
+import { formatPrice } from '@/lib/utils'
 import { useCart } from '@/lib/cart'
 import QuickView from './QuickView'
 import CartDrawer from './CartDrawer'
@@ -42,16 +42,16 @@ function ProductCard({ p, idx, onQuick }: { p: Product; idx: number; onQuick: ()
 
   return (
     <div className="card" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <div className="card-img" style={{ background: CARD_BG[gi] }} onClick={() => window.location.href = `/product/${p.slug}`}>
+      <div className="card-img" style={{ background: (p.images && p.images.length>0)?'#f6ede8':CARD_BG[gi] }} onClick={() => window.location.href = `/product/${p.slug}`}>
         {p.images && p.images[0] ? (
           <>
-            <Image src={optimizeImage(p.images[0], {width:700, quality:90})} alt={p.name} fill
+            <Image src={p.images[0]} alt={p.name} fill
               sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
-              style={{ objectFit: 'cover' }} />
+              style={{ objectFit: 'contain' }} />
             {p.images[1] && (
-              <Image src={optimizeImage(p.images[1], {width:700, quality:90})} alt={p.name} fill className="card-img-hover"
+              <Image src={p.images[1]} alt={p.name} fill className="card-img-hover"
                 sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
-                style={{ objectFit: 'cover' }} />
+                style={{ objectFit: 'contain' }} />
             )}
           </>
         ) : (

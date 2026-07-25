@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Product, Category } from '@/lib/supabase'
-import { formatPrice, optimizeImage } from '@/lib/utils'
+import { formatPrice } from '@/lib/utils'
 import { useCart } from '@/lib/cart'
 import QuickView from './QuickView'
 import CartDrawer from './CartDrawer'
@@ -326,16 +326,16 @@ function CatalogCard({ product, idx, onQuick, onCartOpen }: { product: Product; 
 
   return (
     <div className="card" style={{cursor:'pointer'}}>
-      <div className="card-img" style={{background: CARD_BG[gi]}} onClick={() => window.location.href = `/product/${product.slug}`}>
+      <div className="card-img" style={{background: (product.images && product.images.length>0)?'#f6ede8':CARD_BG[gi]}} onClick={() => window.location.href = `/product/${product.slug}`}>
         {product.images && product.images.length > 0 ? (
           <>
-            <Image src={optimizeImage(product.images[0], {width:700, quality:90})} alt={product.name} fill
+            <Image src={product.images[0]} alt={product.name} fill
               sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
-              style={{objectFit:'cover'}} />
+              style={{objectFit:'contain'}} />
             {product.images[1] && (
-              <Image src={optimizeImage(product.images[1], {width:700, quality:90})} alt={product.name} fill className="card-img-hover"
+              <Image src={product.images[1]} alt={product.name} fill className="card-img-hover"
                 sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
-                style={{objectFit:'cover',opacity:0,transition:'opacity .5s'}} />
+                style={{objectFit:'contain',opacity:0,transition:'opacity .5s'}} />
             )}
           </>
         ) : (
