@@ -35,10 +35,38 @@ export default async function HomePage() {
     .order('created_at', { ascending: false })
     .limit(8)
 
+  // Фото для плиток категорий. Каждой плитке на главной соответствует набор реальных
+  // категорий из БД. Берём случайный товар с фото из этих категорий (меняется при загрузке).
+  const CAT_TILE_GROUPS: Record<string, string[]> = {
+    'lingerie-all': ['classic-lingerie', 'fashion-lingerie', 'seamless'], // Бельё
+    'pajamas': ['pajamas'],                                                // Пижамы
+    'bodysuit': ['bodysuit'],                                              // Боди
+    'robes': ['robes'],                                                    // Халаты
+    'panties-all': ['panties', 'panties-cotton'],                         // Трусики
+  }
+  const { data: pool } = await supabase
+    .from('products')
+    .select('images, categories(slug)')
+    .eq('in_stock', true)
+    .not('images', 'is', null)
+    .limit(800)
+
+  const withPhoto = (pool || []).filter(
+    (p: any) => Array.isArray(p.images) && p.images.length > 0 && p.images[0]
+  )
+  const pick = (arr: any[]) => (arr.length ? arr[Math.floor(Math.random() * arr.length)] : null)
+
+  const catImages: Record<string, string> = {}
+  for (const [tile, slugs] of Object.entries(CAT_TILE_GROUPS)) {
+    const matches = withPhoto.filter((p: any) => slugs.includes((p.categories as any)?.slug))
+    const chosen = pick(matches.length ? matches : withPhoto)
+    if (chosen) catImages[tile] = chosen.images[0]
+  }
+
   return (
     <main>
       <Header />
-      <HomeClient featured={featured || []} newProducts={newProducts || []} />
+      <HomeClient featured={featured || []} newProducts={newProducts || []} catImages={catImages} />
       <Footer />
     </main>
   )

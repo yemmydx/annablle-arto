@@ -17,11 +17,11 @@ const CARD_BG = [
 ]
 
 const CATS = [
-  { name: 'Бельё', sub: 'комплекты', slug: 'komplekty', bg: 'linear-gradient(165deg,#f3c8be 0%,#d99c8e 100%)' },
-  { name: 'Пижамы', sub: 'домашняя', slug: 'pijamy', bg: 'linear-gradient(165deg,#e8b4a6 0%,#c98e88 100%)', italic: true },
-  { name: 'Боди', sub: 'корсеты', slug: 'body', bg: 'linear-gradient(165deg,#f5d4ca 0%,#e8b4a6 100%)' },
-  { name: 'Халаты', sub: 'уют', slug: 'halaty', bg: 'linear-gradient(165deg,#ead0c4 0%,#d4a094 100%)', italic: true },
-  { name: 'Трусики', sub: 'базовые', slug: 'trusiki', bg: 'linear-gradient(165deg,#d9a594 0%,#b8786a 100%)' },
+  { name: 'Бельё', sub: 'комплекты', key: 'lingerie-all', href: '/catalog?section=lingerie', bg: 'linear-gradient(165deg,#f3c8be 0%,#d99c8e 100%)' },
+  { name: 'Пижамы', sub: 'домашняя', key: 'pajamas', href: '/catalog?category=pajamas', bg: 'linear-gradient(165deg,#e8b4a6 0%,#c98e88 100%)', italic: true },
+  { name: 'Боди', sub: 'корсеты', key: 'bodysuit', href: '/catalog?category=bodysuit', bg: 'linear-gradient(165deg,#f5d4ca 0%,#e8b4a6 100%)' },
+  { name: 'Халаты', sub: 'уют', key: 'robes', href: '/catalog?category=robes', bg: 'linear-gradient(165deg,#ead0c4 0%,#d4a094 100%)', italic: true },
+  { name: 'Трусики', sub: 'базовые', key: 'panties-all', href: '/catalog?category=panties', bg: 'linear-gradient(165deg,#d9a594 0%,#b8786a 100%)' },
 ]
 
 const PROMISE = [
@@ -42,16 +42,16 @@ function ProductCard({ p, idx, onQuick }: { p: Product; idx: number; onQuick: ()
 
   return (
     <div className="card" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <div className="card-img" style={{ background: (p.images && p.images.length>0)?'#f6ede8':CARD_BG[gi] }} onClick={() => window.location.href = `/product/${p.slug}`}>
+      <div className="card-img" style={{ background: CARD_BG[gi] }} onClick={() => window.location.href = `/product/${p.slug}`}>
         {p.images && p.images[0] ? (
           <>
             <Image src={p.images[0]} alt={p.name} fill
               sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
-              style={{ objectFit: 'contain' }} />
+              style={{ objectFit: 'cover' }} />
             {p.images[1] && (
               <Image src={p.images[1]} alt={p.name} fill className="card-img-hover"
                 sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
-                style={{ objectFit: 'contain' }} />
+                style={{ objectFit: 'cover' }} />
             )}
           </>
         ) : (
@@ -89,7 +89,7 @@ function ProductCard({ p, idx, onQuick }: { p: Product; idx: number; onQuick: ()
   )
 }
 
-export default function HomeClient({ featured, newProducts }: { featured: Product[]; newProducts: Product[] }) {
+export default function HomeClient({ featured, newProducts, catImages = {} }: { featured: Product[]; newProducts: Product[]; catImages?: Record<string, string> }) {
   const [quickProduct, setQuickProduct] = useState<Product | null>(null)
   const [cartOpen, setCartOpen] = useState(false)
 
@@ -161,9 +161,22 @@ export default function HomeClient({ featured, newProducts }: { featured: Produc
         </div>
         <div className="cats">
           {CATS.map((cat, i) => (
-            <Link key={cat.slug} href={`/catalog?category=${cat.slug}`} style={{ textDecoration: 'none' }}>
-              <div className="cat" style={{ background: cat.bg }}>
-                <div className="ph"><div className="ph-label">[ {cat.sub} ]</div></div>
+            <Link key={cat.key} href={cat.href} style={{ textDecoration: 'none' }}>
+              <div className="cat" style={{ background: catImages[cat.key] ? '#f6ede8' : cat.bg }}>
+                {catImages[cat.key] ? (
+                  <>
+                    <img
+                      src={catImages[cat.key]}
+                      alt={cat.name}
+                      loading="lazy"
+                      decoding="async"
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(58,40,40,0.55), transparent 45%)' }} />
+                  </>
+                ) : (
+                  <div className="ph"><div className="ph-label">[ {cat.sub} ]</div></div>
+                )}
                 <div className="cat-label">
                   <h3>{cat.italic ? <em>{cat.name}</em> : cat.name}</h3>
                   <div className="cat-arrow"><ArrowUR /></div>
