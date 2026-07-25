@@ -329,11 +329,11 @@ function CatalogCard({ product, idx, onQuick, onCartOpen }: { product: Product; 
       <div className="card-img" style={{background: CARD_BG[gi]}} onClick={() => window.location.href = `/product/${product.slug}`}>
         {product.images && product.images.length > 0 ? (
           <>
-            <Image src={optimizeImage(product.images[0], {width:700, quality:82})} alt={product.name} fill
+            <Image src={optimizeImage(product.images[0], {width:700, quality:90})} alt={product.name} fill
               sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
               style={{objectFit:'cover'}} />
             {product.images[1] && (
-              <Image src={optimizeImage(product.images[1], {width:700, quality:82})} alt={product.name} fill className="card-img-hover"
+              <Image src={optimizeImage(product.images[1], {width:700, quality:90})} alt={product.name} fill className="card-img-hover"
                 sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
                 style={{objectFit:'cover',opacity:0,transition:'opacity .5s'}} />
             )}

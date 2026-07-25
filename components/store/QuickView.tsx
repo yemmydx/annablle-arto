@@ -88,7 +88,7 @@ export default function QuickView({ product: p, onClose, onCartOpen }: {
         <div className="qv-photo" style={{background:CARD_BG[0]}}>
           {images.length > 0 && (
             <Image
-              src={optimizeImage(images[imgIdx] || images[0], {width:900, quality:85})}
+              src={optimizeImage(images[imgIdx] || images[0], {width:1000, quality:90})}
               alt={p.name}
               fill
               sizes="(max-width:700px) 90vw, 450px"
@@ -99,7 +99,7 @@ export default function QuickView({ product: p, onClose, onCartOpen }: {
             <div className="qv-thumbs">
               {images.slice(0,4).map((src, i) => (
                 <button key={i} className={`qv-thumb ${i === imgIdx ? 'on' : ''}`} onClick={() => setImgIdx(i)} aria-label={`Фото ${i+1}`}>
-                  <Image src={optimizeImage(src, {width:150, quality:80})} alt="" fill sizes="44px" style={{objectFit:'cover'}} />
+                  <Image src={optimizeImage(src, {width:150, quality:85})} alt="" fill sizes="44px" style={{objectFit:'cover'}} />
                 </button>
               ))}
             </div>

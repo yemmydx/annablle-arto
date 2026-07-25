@@ -138,7 +138,7 @@ export default function ProductDetail({ product: p, colors, related, collectionP
                 onClick={() => setActiveImg(i)}
                 style={{background: CARD_BG[i % CARD_BG.length], position:'relative', overflow:'hidden'}}>
                 {img ? (
-                  <Image src={optimizeImage(img, {width:200, quality:80})} alt={`${p.name} ${i+1}`} fill sizes="90px"
+                  <Image src={optimizeImage(img, {width:200, quality:85})} alt={`${p.name} ${i+1}`} fill sizes="90px"
                     style={{objectFit:'cover'}} />
                 ) : (
                   <div className="ph" style={{borderRadius:8}}></div>
@@ -160,7 +160,7 @@ export default function ProductDetail({ product: p, colors, related, collectionP
             }}
           >
             {images[activeImg] ? (
-              <Image src={optimizeImage(images[activeImg], {width:1400, quality:85})} alt={p.name} fill priority
+              <Image src={optimizeImage(images[activeImg], {width:1600, quality:90})} alt={p.name} fill priority
                 sizes="(max-width:900px) 100vw, 640px"
                 quality={85}
                 style={{

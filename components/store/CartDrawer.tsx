@@ -34,7 +34,7 @@ export default function CartDrawer({ onClose }: { onClose: () => void }) {
             <div key={`${item.product.id}-${item.size}`} style={{display:'grid',gridTemplateColumns:'80px 1fr auto',gap:14,padding:'14px 0',borderBottom:'1px solid var(--line)'}}>
               <Link href={`/product/${item.product.slug}`} onClick={onClose} style={{aspectRatio:'3/4',borderRadius:8,background:'linear-gradient(165deg,#e8b4a6,#c98e88)',position:'relative',overflow:'hidden',display:'block'}}>
                 {itemImage ? (
-                  <img src={optimizeImage(itemImage, {width:250, quality:80})} alt={item.product.name}
+                  <img src={optimizeImage(itemImage, {width:250, quality:85})} alt={item.product.name}
                     style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
                 ) : (
                   <div className="ph" style={{borderRadius:8}}></div>

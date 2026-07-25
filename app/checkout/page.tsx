@@ -201,7 +201,7 @@ export default function CheckoutPage() {
                     return (
                       <div key={`${item.product.id}-${item.size}`} style={{ display: 'grid', gridTemplateColumns: '56px 1fr auto', gap: 12, alignItems: 'center' }}>
                         <div style={{ aspectRatio: '3/4', width: 56, borderRadius: 8, overflow: 'hidden', background: 'linear-gradient(165deg,#f3c8be,#d99c8e)', position: 'relative', flexShrink: 0 }}>
-                          {img && <img src={optimizeImage(img, {width:250, quality:80})} alt={item.product.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+                          {img && <img src={optimizeImage(img, {width:250, quality:85})} alt={item.product.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
                           <span style={{ position: 'absolute', top: -6, right: -6, background: 'var(--ink)', color: 'var(--cream)', fontSize: 10, width: 18, height: 18, borderRadius: 999, display: 'grid', placeItems: 'center', fontFamily: 'JetBrains Mono, monospace' }}>{item.qty}</span>
                         </div>
                         <div style={{ minWidth: 0 }}>

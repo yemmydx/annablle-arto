@@ -57,15 +57,16 @@ export const KZ_CITIES = [
 ]
 
 // Оптимизация фото через Supabase Image Transformation (Pro).
-// object/public -> render/image/public + width/quality. Supabase отдаёт лёгкий WebP на лету.
-// Качество высокое (по умолч. 82) — визуально как оригинал, но файл в разы меньше.
+// object/public -> render/image/public + width/quality. Отдаёт лёгкий WebP на лету.
+// Качество 90 = визуально не отличить от оригинала, но файл в разы меньше.
+// НА КРОП НЕ ВЛИЯЕТ — обрезка задаётся отдельно в CSS (object-fit).
 export function optimizeImage(
   url: string | null | undefined,
   opts: { width?: number; quality?: number } = {}
 ): string {
   if (!url) return ''
   if (!url.includes('/storage/v1/object/public/')) return url
-  const { width = 700, quality = 82 } = opts
+  const { width = 700, quality = 90 } = opts
   const base = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')
   const sep = base.includes('?') ? '&' : '?'
   return `${base}${sep}width=${width}&quality=${quality}`

@@ -49,7 +49,7 @@ export default function CartPage() {
                 {/* Фото */}
                 <div className="w-20 h-28 bg-[var(--color-warm)] relative overflow-hidden shrink-0">
                   {item.product.images?.[0] ? (
-                    <Image src={optimizeImage(item.product.images[0], {width:250, quality:80})} alt={item.product.name} fill className="object-cover" />
+                    <Image src={optimizeImage(item.product.images[0], {width:250, quality:85})} alt={item.product.name} fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <span className="text-[9px] text-stone-400 text-center px-1">{item.product.name}</span>
