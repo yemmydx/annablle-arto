@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
 :root{
   --bg:#fbe9e3;--bg-2:#f5d9d0;--bg-3:#fdf2ee;
@@ -27,7 +27,7 @@ html,body{background:var(--bg);color:var(--ink);font-family:'Inter Tight',-apple
 .marquee{background:var(--ink);color:var(--cream);padding:9px 0;overflow:hidden;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;}
 .marquee-track{display:inline-block;animation:scroll 35s linear infinite;}
 .marquee span{padding:0 28px;}
-.marquee span::after{content:'✶';margin-left:28px;opacity:0.5;}
+.marquee span::after{content:'âœ¶';margin-left:28px;opacity:0.5;}
 @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 .hero{position:relative;padding:24px 24px 28px;}
@@ -66,7 +66,7 @@ section{padding:72px 36px;position:relative;max-width:1280px;margin:0 auto;}
 
 .product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px 18px;}
 .card{position:relative;cursor:pointer;display:flex;flex-direction:column;gap:10px;text-decoration:none;color:inherit;}
-.card-img{position:relative;aspect-ratio:2/3;border-radius:10px;overflow:hidden;transition:transform .5s cubic-bezier(.2,.7,.2,1);}
+.card-img{position:relative;aspect-ratio:3/4;border-radius:10px;overflow:hidden;transition:transform .5s cubic-bezier(.2,.7,.2,1);}
 .card:hover .card-img{transform:scale(1.01);}
 .card-img-inner{position:absolute;inset:0;}
 .card-img-hover{position:absolute;inset:0;opacity:0;transition:opacity .5s;}
@@ -211,7 +211,7 @@ footer{background:var(--ink);color:var(--cream);padding:72px 36px 28px;border-ra
 .mega-col-link{display:block;padding:6px 0;color:var(--ink);text-decoration:none;font-size:13px;line-height:1.5;transition:color .2s,padding .2s;}
 .mega-col-link:hover{color:var(--rose-deep);padding-left:4px;}
 
-/* Если коллекций мало — выводи их в один столбец, не сетку */
+/* Ð•ÑÐ»Ð¸ ÐºÐ¾Ð»Ð»ÐµÐºÑ†Ð¸Ð¹ Ð¼Ð°Ð»Ð¾ â€” Ð²Ñ‹Ð²Ð¾Ð´Ð¸ Ð¸Ñ… Ð² Ð¾Ð´Ð¸Ð½ ÑÑ‚Ð¾Ð»Ð±ÐµÑ†, Ð½Ðµ ÑÐµÑ‚ÐºÑƒ */
 .mega-col:has(.mega-col-list li:nth-child(-n+8):last-child) .mega-col-list{grid-template-columns:1fr;}
 
 .mega-banner{position:relative;display:block;border-radius:14px;overflow:hidden;text-decoration:none;color:#fff7f3;min-height:280px;background:linear-gradient(135deg,#c98e88 0%,#7a3a36 100%);transition:transform .35s;}
@@ -284,7 +284,7 @@ footer{background:var(--ink);color:var(--cream);padding:72px 36px 28px;border-ra
   line-height:1.6;
 }
 .pdp-desc-list li::before{
-  content:'✿';
+  content:'âœ¿';
   position:absolute;
   left:0;
   top:0;
@@ -316,17 +316,17 @@ footer{background:var(--ink);color:var(--cream);padding:72px 36px 28px;border-ra
   color:var(--ink);
 }
 
-/* ФИКС: цена "соскакивала" — на узкой карточке flex сжимал её и она наезжала.
-   Запрещаем перенос и сжатие цены, длинному названию разрешаем перенос. */
+/* Ð¤Ð˜ÐšÐ¡: Ñ†ÐµÐ½Ð° "ÑÐ¾ÑÐºÐ°ÐºÐ¸Ð²Ð°Ð»Ð°" â€” Ð½Ð° ÑƒÐ·ÐºÐ¾Ð¹ ÐºÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÐµ flex ÑÐ¶Ð¸Ð¼Ð°Ð» ÐµÑ‘ Ð¸ Ð¾Ð½Ð° Ð½Ð°ÐµÐ·Ð¶Ð°Ð»Ð°.
+   Ð—Ð°Ð¿Ñ€ÐµÑ‰Ð°ÐµÐ¼ Ð¿ÐµÑ€ÐµÐ½Ð¾Ñ Ð¸ ÑÐ¶Ð°Ñ‚Ð¸Ðµ Ñ†ÐµÐ½Ñ‹, Ð´Ð»Ð¸Ð½Ð½Ð¾Ð¼Ñƒ Ð½Ð°Ð·Ð²Ð°Ð½Ð¸ÑŽ Ñ€Ð°Ð·Ñ€ÐµÑˆÐ°ÐµÐ¼ Ð¿ÐµÑ€ÐµÐ½Ð¾Ñ. */
 .card-info{align-items:flex-start;}
 .card-info h4{overflow-wrap:anywhere;min-width:0;}
 .card-price{white-space:nowrap;flex-shrink:0;text-align:right;}
 
 /* ============================================================
-   ВОССТАНОВЛЕННЫЕ СТИЛИ (потерялись при откате globals.css)
+   Ð’ÐžÐ¡Ð¡Ð¢ÐÐÐžÐ’Ð›Ð•ÐÐÐ«Ð• Ð¡Ð¢Ð˜Ð›Ð˜ (Ð¿Ð¾Ñ‚ÐµÑ€ÑÐ»Ð¸ÑÑŒ Ð¿Ñ€Ð¸ Ð¾Ñ‚ÐºÐ°Ñ‚Ðµ globals.css)
    ============================================================ */
 
-/* --- Текстовый логотип: POD PLATIEM + ПОД ПЛАТЬЕМ (в две строки) --- */
+/* --- Ð¢ÐµÐºÑÑ‚Ð¾Ð²Ñ‹Ð¹ Ð»Ð¾Ð³Ð¾Ñ‚Ð¸Ð¿: POD PLATIEM + ÐŸÐžÐ” ÐŸÐ›ÐÐ¢Ð¬Ð•Ðœ (Ð² Ð´Ð²Ðµ ÑÑ‚Ñ€Ð¾ÐºÐ¸) --- */
 .brand { display: inline-flex; align-items: center; text-decoration: none; }
 .brand-logo { display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1; }
 .brand-logo-title {
@@ -341,18 +341,18 @@ footer{background:var(--ink);color:var(--cream);padding:72px 36px 28px;border-ra
 }
 .brand:hover .brand-logo-title { color: #9b3d3f; transition: color .25s; }
 
-/* --- Скрыть плейсхолдеры-подписи под фото (тёмные пилюли [ ... ]) --- */
+/* --- Ð¡ÐºÑ€Ñ‹Ñ‚ÑŒ Ð¿Ð»ÐµÐ¹ÑÑ…Ð¾Ð»Ð´ÐµÑ€Ñ‹-Ð¿Ð¾Ð´Ð¿Ð¸ÑÐ¸ Ð¿Ð¾Ð´ Ñ„Ð¾Ñ‚Ð¾ (Ñ‚Ñ‘Ð¼Ð½Ñ‹Ðµ Ð¿Ð¸Ð»ÑŽÐ»Ð¸ [ ... ]) --- */
 .ph-label { display: none; }
 
-/* --- Категории вверху: шрифт как у названия и крупнее --- */
+/* --- ÐšÐ°Ñ‚ÐµÐ³Ð¾Ñ€Ð¸Ð¸ Ð²Ð²ÐµÑ€Ñ…Ñƒ: ÑˆÑ€Ð¸Ñ„Ñ‚ ÐºÐ°Ðº Ñƒ Ð½Ð°Ð·Ð²Ð°Ð½Ð¸Ñ Ð¸ ÐºÑ€ÑƒÐ¿Ð½ÐµÐµ --- */
 .mega-link { font-family: 'Cormorant Garamond', serif; font-size: 19px; letter-spacing: 0.01em; }
 
-/* --- Цена в карточке: не сжимается и не наезжает --- */
+/* --- Ð¦ÐµÐ½Ð° Ð² ÐºÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÐµ: Ð½Ðµ ÑÐ¶Ð¸Ð¼Ð°ÐµÑ‚ÑÑ Ð¸ Ð½Ðµ Ð½Ð°ÐµÐ·Ð¶Ð°ÐµÑ‚ --- */
 .card-info { align-items: flex-start; }
 .card-info h4 { overflow-wrap: anywhere; min-width: 0; }
 .card-price { white-space: nowrap; flex-shrink: 0; text-align: right; }
 
-/* --- Мобильное меню: гамбургер + выезжающая панель --- */
+/* --- ÐœÐ¾Ð±Ð¸Ð»ÑŒÐ½Ð¾Ðµ Ð¼ÐµÐ½ÑŽ: Ð³Ð°Ð¼Ð±ÑƒÑ€Ð³ÐµÑ€ + Ð²Ñ‹ÐµÐ·Ð¶Ð°ÑŽÑ‰Ð°Ñ Ð¿Ð°Ð½ÐµÐ»ÑŒ --- */
 .nav-left-wrap { display: flex; align-items: center; gap: 16px; min-width: 0; }
 .nav-burger {
   display: none; width: 40px; height: 40px; border-radius: 10px;
@@ -406,7 +406,7 @@ footer{background:var(--ink);color:var(--cream);padding:72px 36px 28px;border-ra
   .cats { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* === Фикс горизонтального «ерзания» на мобиле === */
+/* === Ð¤Ð¸ÐºÑ Ð³Ð¾Ñ€Ð¸Ð·Ð¾Ð½Ñ‚Ð°Ð»ÑŒÐ½Ð¾Ð³Ð¾ Â«ÐµÑ€Ð·Ð°Ð½Ð¸ÑÂ» Ð½Ð° Ð¼Ð¾Ð±Ð¸Ð»Ðµ === */
 html { overflow-x: clip; }
 body { overflow-x: clip; max-width: 100%; }
 @media (max-width: 900px) {
@@ -414,3 +414,4 @@ body { overflow-x: clip; max-width: 100%; }
   .catalog-body { padding: 20px 16px 60px; }
   .catalog-body .product-grid { max-width: 100%; }
 }
+
