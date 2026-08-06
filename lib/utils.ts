@@ -1,4 +1,4 @@
-// Форматирование цены в тенге
+﻿// Ð¤Ð¾Ñ€Ð¼Ð°Ñ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ Ñ†ÐµÐ½Ñ‹ Ð² Ñ‚ÐµÐ½Ð³Ðµ
 export function formatPrice(amount: number): string {
   return new Intl.NumberFormat('ru-KZ', {
     style: 'currency',
@@ -8,13 +8,13 @@ export function formatPrice(amount: number): string {
   }).format(amount)
 }
 
-// Генерация slug из названия
+// Ð“ÐµÐ½ÐµÑ€Ð°Ñ†Ð¸Ñ slug Ð¸Ð· Ð½Ð°Ð·Ð²Ð°Ð½Ð¸Ñ
 export function slugify(text: string): string {
   const cyrillicMap: Record<string, string> = {
-    а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'yo',ж:'zh',з:'z',
-    и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',
-    с:'s',т:'t',у:'u',ф:'f',х:'kh',ц:'ts',ч:'ch',ш:'sh',
-    щ:'shch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya'
+    Ð°:'a',Ð±:'b',Ð²:'v',Ð³:'g',Ð´:'d',Ðµ:'e',Ñ‘:'yo',Ð¶:'zh',Ð·:'z',
+    Ð¸:'i',Ð¹:'y',Ðº:'k',Ð»:'l',Ð¼:'m',Ð½:'n',Ð¾:'o',Ð¿:'p',Ñ€:'r',
+    Ñ:'s',Ñ‚:'t',Ñƒ:'u',Ñ„:'f',Ñ…:'kh',Ñ†:'ts',Ñ‡:'ch',Ñˆ:'sh',
+    Ñ‰:'shch',ÑŠ:'',Ñ‹:'y',ÑŒ:'',Ñ:'e',ÑŽ:'yu',Ñ:'ya'
   }
   return text
     .toLowerCase()
@@ -25,41 +25,41 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-// Статусы заказов на русском
+// Ð¡Ñ‚Ð°Ñ‚ÑƒÑÑ‹ Ð·Ð°ÐºÐ°Ð·Ð¾Ð² Ð½Ð° Ñ€ÑƒÑÑÐºÐ¾Ð¼
 export const ORDER_STATUSES: Record<string, string> = {
-  pending: 'Ожидает оплаты',
-  paid: 'Оплачен',
-  shipped: 'Отправлен',
-  delivered: 'Доставлен',
-  cancelled: 'Отменён',
+  pending: 'ÐžÐ¶Ð¸Ð´Ð°ÐµÑ‚ Ð¾Ð¿Ð»Ð°Ñ‚Ñ‹',
+  paid: 'ÐžÐ¿Ð»Ð°Ñ‡ÐµÐ½',
+  shipped: 'ÐžÑ‚Ð¿Ñ€Ð°Ð²Ð»ÐµÐ½',
+  delivered: 'Ð”Ð¾ÑÑ‚Ð°Ð²Ð»ÐµÐ½',
+  cancelled: 'ÐžÑ‚Ð¼ÐµÐ½Ñ‘Ð½',
 }
 
-// Методы доставки
+// ÐœÐµÑ‚Ð¾Ð´Ñ‹ Ð´Ð¾ÑÑ‚Ð°Ð²ÐºÐ¸
 export const DELIVERY_METHODS = [
-  { value: 'courier', label: 'Курьер по городу' },
-  { value: 'kazpost', label: 'Казпочта' },
-  { value: 'pickup', label: 'Самовывоз' },
+  { value: 'courier', label: 'ÐšÑƒÑ€ÑŒÐµÑ€ Ð¿Ð¾ Ð³Ð¾Ñ€Ð¾Ð´Ñƒ' },
+  { value: 'kazpost', label: 'ÐšÐ°Ð·Ð¿Ð¾Ñ‡Ñ‚Ð°' },
+  { value: 'pickup', label: 'Ð¡Ð°Ð¼Ð¾Ð²Ñ‹Ð²Ð¾Ð·' },
 ]
 
-// Методы оплаты
+// ÐœÐµÑ‚Ð¾Ð´Ñ‹ Ð¾Ð¿Ð»Ð°Ñ‚Ñ‹
 export const PAYMENT_METHODS = [
   { value: 'kaspi', label: 'Kaspi Pay' },
   { value: 'halyk', label: 'Halyk Bank' },
   { value: 'card', label: 'Visa / Mastercard' },
-  { value: 'cash', label: 'Наличные при получении' },
+  { value: 'cash', label: 'ÐÐ°Ð»Ð¸Ñ‡Ð½Ñ‹Ðµ Ð¿Ñ€Ð¸ Ð¿Ð¾Ð»ÑƒÑ‡ÐµÐ½Ð¸Ð¸' },
 ]
 
-// Города Казахстана
+// Ð“Ð¾Ñ€Ð¾Ð´Ð° ÐšÐ°Ð·Ð°Ñ…ÑÑ‚Ð°Ð½Ð°
 export const KZ_CITIES = [
-  'Алматы', 'Астана', 'Шымкент', 'Қарағанды', 'Ақтөбе',
-  'Тараз', 'Павлодар', 'Өскемен', 'Семей', 'Атырау',
-  'Қостанай', 'Петропавл', 'Орал', 'Түркістан', 'Қызылорда',
+  'ÐÐ»Ð¼Ð°Ñ‚Ñ‹', 'ÐÑÑ‚Ð°Ð½Ð°', 'Ð¨Ñ‹Ð¼ÐºÐµÐ½Ñ‚', 'ÒšÐ°Ñ€Ð°Ò“Ð°Ð½Ð´Ñ‹', 'ÐÒ›Ñ‚Ó©Ð±Ðµ',
+  'Ð¢Ð°Ñ€Ð°Ð·', 'ÐŸÐ°Ð²Ð»Ð¾Ð´Ð°Ñ€', 'Ó¨ÑÐºÐµÐ¼ÐµÐ½', 'Ð¡ÐµÐ¼ÐµÐ¹', 'ÐÑ‚Ñ‹Ñ€Ð°Ñƒ',
+  'ÒšÐ¾ÑÑ‚Ð°Ð½Ð°Ð¹', 'ÐŸÐµÑ‚Ñ€Ð¾Ð¿Ð°Ð²Ð»', 'ÐžÑ€Ð°Ð»', 'Ð¢Ò¯Ñ€ÐºÑ–ÑÑ‚Ð°Ð½', 'ÒšÑ‹Ð·Ñ‹Ð»Ð¾Ñ€Ð´Ð°',
 ]
 
-// Оптимизация фото через Supabase Image Transformation (Pro).
-// object/public -> render/image/public + width/quality. Отдаёт лёгкий WebP на лету.
-// Качество 90 = визуально не отличить от оригинала, но файл в разы меньше.
-// НА КРОП НЕ ВЛИЯЕТ — обрезка задаётся отдельно в CSS (object-fit).
+// ÐžÐ¿Ñ‚Ð¸Ð¼Ð¸Ð·Ð°Ñ†Ð¸Ñ Ñ„Ð¾Ñ‚Ð¾ Ñ‡ÐµÑ€ÐµÐ· Supabase Image Transformation (Pro).
+// object/public -> render/image/public + width/quality. ÐžÑ‚Ð´Ð°Ñ‘Ñ‚ Ð»Ñ‘Ð³ÐºÐ¸Ð¹ WebP Ð½Ð° Ð»ÐµÑ‚Ñƒ.
+// ÐšÐ°Ñ‡ÐµÑÑ‚Ð²Ð¾ 90 = Ð²Ð¸Ð·ÑƒÐ°Ð»ÑŒÐ½Ð¾ Ð½Ðµ Ð¾Ñ‚Ð»Ð¸Ñ‡Ð¸Ñ‚ÑŒ Ð¾Ñ‚ Ð¾Ñ€Ð¸Ð³Ð¸Ð½Ð°Ð»Ð°, Ð½Ð¾ Ñ„Ð°Ð¹Ð» Ð² Ñ€Ð°Ð·Ñ‹ Ð¼ÐµÐ½ÑŒÑˆÐµ.
+// ÐÐ ÐšÐ ÐžÐŸ ÐÐ• Ð’Ð›Ð˜Ð¯Ð•Ð¢ â€” Ð¾Ð±Ñ€ÐµÐ·ÐºÐ° Ð·Ð°Ð´Ð°Ñ‘Ñ‚ÑÑ Ð¾Ñ‚Ð´ÐµÐ»ÑŒÐ½Ð¾ Ð² CSS (object-fit).
 export function optimizeImage(
   url: string | null | undefined,
   opts: { width?: number; quality?: number } = {}
@@ -69,5 +69,5 @@ export function optimizeImage(
   const { width = 700, quality = 90 } = opts
   const base = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')
   const sep = base.includes('?') ? '&' : '?'
-  return `${base}${sep}width=${width}&quality=${quality}`
+  return `${base}${sep}width=${width}&height=${Math.round(width*1.5)}&resize=contain&quality=${quality}`
 }
