@@ -39,7 +39,7 @@ function ProductCard({ product, idx }: { product: Product; idx: number }) {
       <div className="card-img" style={{background: firstImage ? '#ffffff' : CARD_GRADIENTS[gi]}}>
         {firstImage ? (
           <div className="card-img-inner">
-            <Image src={optimizeImage(firstImage, {width:800, quality:90})} alt={product.name} fill style={{objectFit:'cover'}} />
+            <Image src={optimizeImage(firstImage, {width:800, quality:90})} alt={product.name} fill style={{objectFit:'contain'}} />
           </div>
         ) : (
           <>

@@ -92,7 +92,7 @@ export default function QuickView({ product: p, onClose, onCartOpen }: {
               alt={p.name}
               fill
               sizes="(max-width:700px) 90vw, 450px"
-              style={{objectFit:'cover'}}
+              style={{objectFit:'contain'}}
             />
           )}
           {images.length > 1 && (
