@@ -40,8 +40,7 @@ function sortSizes(arr: (string | null)[]): string[] {
 
 const qvCss = `
 .qv-grid{background:var(--cream);border-radius:18px;width:100%;max-width:900px;max-height:90vh;overflow:auto;display:grid;grid-template-columns:1fr 1fr;position:relative;animation:pop .3s cubic-bezier(.2,.7,.2,1);}
-.qv-photo{border-radius:18px 0 0 18px;position:relative;overflow:hidden;background:#ffffff;display:flex;align-items:center;}
-.qv-photo>img.qv-main{display:block;width:100%;height:auto;max-height:82vh;object-fit:contain;}
+.qv-photo{aspect-ratio:2/3;border-radius:18px 0 0 18px;position:relative;overflow:hidden;background:#ffffff;}
 .qv-desc{color:var(--ink-soft);font-size:13px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;}
 .qv-thumbs{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;z-index:2;}
 .qv-thumb{width:44px;height:56px;border-radius:8px;overflow:hidden;position:relative;border:2px solid rgba(255,255,255,0.7);cursor:pointer;padding:0;background:none;}
@@ -88,10 +87,12 @@ export default function QuickView({ product: p, onClose, onCartOpen }: {
         {/* Фото */}
         <div className="qv-photo">
           {images.length > 0 && (
-            <img
-              className="qv-main"
+            <Image
               src={optimizeImage(images[imgIdx] || images[0], {width:1000, quality:90})}
               alt={p.name}
+              fill
+              sizes="(max-width:700px) 90vw, 450px"
+              style={{objectFit:'contain'}}
             />
           )}
           {images.length > 1 && (

@@ -56,7 +56,7 @@ section{padding:72px 36px;position:relative;max-width:1280px;margin:0 auto;}
 .section-meta{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;opacity:0.6;}
 
 .cats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
-.cat{position:relative;aspect-ratio:3/4;border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .5s cubic-bezier(.2,.7,.2,1);}
+.cat{position:relative;aspect-ratio:4/5;border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .5s cubic-bezier(.2,.7,.2,1);}
 .cat:hover{transform:translateY(-6px);}
 .cat-label{position:absolute;left:16px;right:16px;bottom:16px;display:flex;justify-content:space-between;align-items:flex-end;color:var(--cream);}
 .cat-label h3{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:24px;line-height:1;}
@@ -406,6 +406,11 @@ footer{background:var(--ink);color:var(--cream);padding:72px 36px 28px;border-ra
   .cats { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* natural card: photo defines the height (no crop, no bars) */
-.card-img.natural{aspect-ratio:auto;height:auto;}
-.pdp-main{aspect-ratio:auto;}
+/* === Фикс горизонтального «ерзания» на мобиле === */
+html { overflow-x: clip; }
+body { overflow-x: clip; max-width: 100%; }
+@media (max-width: 900px) {
+  .catalog-head { padding: 24px 16px; }
+  .catalog-body { padding: 20px 16px 60px; }
+  .catalog-body .product-grid { max-width: 100%; }
+}
