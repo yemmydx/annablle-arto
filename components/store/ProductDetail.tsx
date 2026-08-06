@@ -148,7 +148,7 @@ export default function ProductDetail({ product: p, colors, related, collectionP
           </div>
           <div
             className="pdp-main"
-            style={{background: images[activeImg] ? '#ffffff' : CARD_BG[activeImg % CARD_BG.length], position:'relative', overflow:'hidden', cursor: images[activeImg] ? 'zoom-in' : 'default'}}
+            style={{background: images[activeImg] ? '#ffffff' : CARD_BG[activeImg % CARD_BG.length], aspectRatio: images[activeImg] ? 'auto' : undefined, position:'relative', overflow:'hidden', cursor: images[activeImg] ? 'zoom-in' : 'default'}}
             onMouseEnter={() => images[activeImg] && setZoom(z => ({ ...z, on: true }))}
             onMouseLeave={() => setZoom(z => ({ ...z, on: false }))}
             onMouseMove={e => {
@@ -160,11 +160,9 @@ export default function ProductDetail({ product: p, colors, related, collectionP
             }}
           >
             {images[activeImg] ? (
-              <Image src={optimizeImage(images[activeImg], {width:1600, quality:90})} alt={p.name} fill priority
-                sizes="(max-width:900px) 100vw, 640px"
-                quality={85}
+              <img src={optimizeImage(images[activeImg], {width:1600, quality:90})} alt={p.name}
                 style={{
-                  objectFit:'contain',
+                  display:'block', width:'100%', height:'auto',
                   transformOrigin: `${zoom.x}% ${zoom.y}%`,
                   transform: zoom.on ? 'scale(2)' : 'scale(1)',
                   transition: zoom.on ? 'transform .1s ease-out' : 'transform .3s ease-out',

@@ -36,10 +36,10 @@ function ProductCard({ product, idx }: { product: Product; idx: number }) {
 
   return (
     <Link href={`/product/${product.slug}`} className="card">
-      <div className="card-img" style={{background: firstImage ? '#ffffff' : CARD_GRADIENTS[gi]}}>
+      <div className={`card-img${firstImage ? ' natural' : ''}`} style={{background: firstImage ? '#ffffff' : CARD_GRADIENTS[gi]}}>
         {firstImage ? (
           <div className="card-img-inner">
-            <Image src={optimizeImage(firstImage, {width:800, quality:90})} alt={product.name} fill style={{objectFit:'contain'}} />
+            <img src={optimizeImage(firstImage, {width:800, quality:90})} alt={product.name} loading="lazy" decoding="async" style={{display:'block',width:'100%',height:'auto'}} />
           </div>
         ) : (
           <>

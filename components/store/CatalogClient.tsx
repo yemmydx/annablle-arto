@@ -326,16 +326,16 @@ function CatalogCard({ product, idx, onQuick, onCartOpen }: { product: Product; 
 
   return (
     <div className="card" style={{cursor:'pointer'}}>
-      <div className="card-img" style={{background: (product.images && product.images.length>0)?'#ffffff':CARD_BG[gi]}} onClick={() => window.location.href = `/product/${product.slug}`}>
+      <div className={`card-img${(product.images && product.images.length>0)?' natural':''}`} style={{background: (product.images && product.images.length>0)?'#ffffff':CARD_BG[gi]}} onClick={() => window.location.href = `/product/${product.slug}`}>
         {product.images && product.images.length > 0 ? (
           <>
-            <Image src={optimizeImage(product.images[0], {width:800, quality:90})} alt={product.name} fill
-              sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
-              style={{objectFit:'contain'}} />
+            <img src={optimizeImage(product.images[0], {width:800, quality:90})} alt={product.name}
+              loading="lazy" decoding="async"
+              style={{display:'block',width:'100%',height:'auto'}} />
             {product.images[1] && (
-              <Image src={optimizeImage(product.images[1], {width:800, quality:90})} alt={product.name} fill className="card-img-hover"
-                sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
-                style={{objectFit:'contain',opacity:0,transition:'opacity .5s'}} />
+              <img src={optimizeImage(product.images[1], {width:800, quality:90})} alt={product.name} className="card-img-hover"
+                loading="lazy" decoding="async"
+                style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:0,transition:'opacity .5s'}} />
             )}
           </>
         ) : (
