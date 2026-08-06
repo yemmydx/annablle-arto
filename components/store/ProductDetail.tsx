@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Product } from '@/lib/supabase'
-import { formatPrice, optimizeImage} from '@/lib/utils'
+import { formatPrice } from '@/lib/utils'
 import { useCart } from '@/lib/cart'
 import ProductGrid from './ProductGrid'
 import CartDrawer from './CartDrawer'
@@ -138,7 +138,7 @@ export default function ProductDetail({ product: p, colors, related, collectionP
                 onClick={() => setActiveImg(i)}
                 style={{background: CARD_BG[i % CARD_BG.length], position:'relative', overflow:'hidden'}}>
                 {img ? (
-                  <Image src={optimizeImage(img, {width:250, quality:85})} alt={`${p.name} ${i+1}`} fill sizes="90px"
+                  <Image src={img} alt={`${p.name} ${i+1}`} fill sizes="90px"
                     style={{objectFit:'contain'}} />
                 ) : (
                   <div className="ph" style={{borderRadius:8}}></div>
@@ -148,7 +148,7 @@ export default function ProductDetail({ product: p, colors, related, collectionP
           </div>
           <div
             className="pdp-main"
-            style={{background: CARD_BG[activeImg % CARD_BG.length], position:'relative', overflow:'hidden', cursor: images[activeImg] ? 'zoom-in' : 'default'}}
+            style={{background: images[activeImg] ? '#ffffff' : CARD_BG[activeImg % CARD_BG.length], position:'relative', overflow:'hidden', cursor: images[activeImg] ? 'zoom-in' : 'default'}}
             onMouseEnter={() => images[activeImg] && setZoom(z => ({ ...z, on: true }))}
             onMouseLeave={() => setZoom(z => ({ ...z, on: false }))}
             onMouseMove={e => {
@@ -160,7 +160,7 @@ export default function ProductDetail({ product: p, colors, related, collectionP
             }}
           >
             {images[activeImg] ? (
-              <Image src={optimizeImage(images[activeImg], {width:1600, quality:90})} alt={p.name} fill priority
+              <Image src={images[activeImg]} alt={p.name} fill priority
                 sizes="(max-width:900px) 100vw, 640px"
                 quality={85}
                 style={{
