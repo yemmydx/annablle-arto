@@ -139,7 +139,7 @@ export default function ProductDetail({ product: p, colors, related, collectionP
                 style={{background: CARD_BG[i % CARD_BG.length], position:'relative', overflow:'hidden'}}>
                 {img ? (
                   <Image src={optimizeImage(img, {width:250, quality:85})} alt={`${p.name} ${i+1}`} fill sizes="90px"
-                    style={{objectFit:'contain'}} />
+                    style={{objectFit:'cover'}} />
                 ) : (
                   <div className="ph" style={{borderRadius:8}}></div>
                 )}
@@ -164,7 +164,7 @@ export default function ProductDetail({ product: p, colors, related, collectionP
                 sizes="(max-width:900px) 100vw, 640px"
                 quality={85}
                 style={{
-                  objectFit:'contain',
+                  objectFit:'cover',
                   transformOrigin: `${zoom.x}% ${zoom.y}%`,
                   transform: zoom.on ? 'scale(2)' : 'scale(1)',
                   transition: zoom.on ? 'transform .1s ease-out' : 'transform .3s ease-out',

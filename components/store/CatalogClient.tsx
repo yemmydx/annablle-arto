@@ -331,11 +331,11 @@ function CatalogCard({ product, idx, onQuick, onCartOpen }: { product: Product; 
           <>
             <Image src={optimizeImage(product.images[0], {width:800, quality:90})} alt={product.name} fill
               sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
-              style={{objectFit:'contain'}} />
+              style={{objectFit:'cover'}} />
             {product.images[1] && (
               <Image src={optimizeImage(product.images[1], {width:800, quality:90})} alt={product.name} fill className="card-img-hover"
                 sizes="(max-width:640px) 50vw, (max-width:900px) 33vw, 25vw"
-                style={{objectFit:'contain',opacity:0,transition:'opacity .5s'}} />
+                style={{objectFit:'cover',opacity:0,transition:'opacity .5s'}} />
             )}
           </>
         ) : (
