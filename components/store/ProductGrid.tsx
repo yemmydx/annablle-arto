@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Product } from '@/lib/supabase'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, optimizeImage} from '@/lib/utils'
 import { useCart } from '@/lib/cart'
 import { useState } from 'react'
 
@@ -39,7 +39,7 @@ function ProductCard({ product, idx }: { product: Product; idx: number }) {
       <div className="card-img" style={{background: firstImage ? '#ffffff' : CARD_GRADIENTS[gi]}}>
         {firstImage ? (
           <div className="card-img-inner">
-            <Image src={firstImage} alt={product.name} fill style={{objectFit:'contain'}} />
+            <Image src={optimizeImage(firstImage, {width:800, quality:90})} alt={product.name} fill style={{objectFit:'contain'}} />
           </div>
         ) : (
           <>
