@@ -25,6 +25,7 @@ export type Product = {
   in_stock: boolean
   is_new: boolean
   is_featured: boolean
+  is_hidden: boolean
   created_at: string
   categories?: Category
   product_variants?: ProductVariant[]

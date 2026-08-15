@@ -25,6 +25,7 @@ type Product = {
   in_stock: boolean
   is_new: boolean
   is_featured: boolean
+  is_hidden: boolean
   images: string[]
   created_at: string
   categories?: { name: string; slug: string } | null
