@@ -119,11 +119,11 @@ export default function AdminPage() {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [form, setForm] = useState<{
     name: string; description: string; price: string; price_old: string;
-    category_id: string; is_new: boolean; is_featured: boolean; in_stock: boolean;
+    category_id: string; is_new: boolean; is_featured: boolean; in_stock: boolean; is_hidden: boolean;
     colors: { name: string; hex: string; images: string; sizes: string }[];
   }>({
     name: '', description: '', price: '', price_old: '',
-    category_id: '', is_new: false, is_featured: false, in_stock: true,
+    category_id: '', is_new: false, is_featured: false, in_stock: true, is_hidden: false,
     colors: [{ name: 'Основной', hex: '#3a2828', images: '', sizes: 'XS,S,M,L,XL' }],
   })
   const [settings, setSettings] = useState<Record<string, string>>({})
@@ -211,7 +211,7 @@ export default function AdminPage() {
     setEditProduct(null)
     setForm({
       name: '', description: '', price: '', price_old: '',
-      category_id: categories[0]?.id || '', is_new: false, is_featured: false, in_stock: true,
+      category_id: categories[0]?.id || '', is_new: false, is_featured: false, in_stock: true, is_hidden: false,
       colors: [{ name: 'Основной', hex: '#3a2828', images: '', sizes: 'XS,S,M,L,XL' }],
     })
     setShowForm(true)
@@ -253,7 +253,7 @@ export default function AdminPage() {
       name: p.name, description: p.description || '', price: String(p.price),
       price_old: p.price_old ? String(p.price_old) : '',
       category_id: (p.categories as any)?.id || (p as any).category_id || '',
-      is_new: p.is_new, is_featured: p.is_featured, in_stock: p.in_stock,
+      is_new: p.is_new, is_featured: p.is_featured, in_stock: p.in_stock, is_hidden: p.is_hidden,
       colors,
     })
     setShowForm(true)
@@ -363,6 +363,7 @@ export default function AdminPage() {
       is_new: form.is_new,
       is_featured: form.is_featured,
       in_stock: form.in_stock,
+      is_hidden: form.is_hidden,
       images: mainImages,
     }
 
@@ -742,7 +743,7 @@ export default function AdminPage() {
                     ))}
                   </div>
                   <div style={{ display: 'flex', gap: 20, marginBottom: 24 }}>
-                    {[['is_new', 'Новинка'], ['is_featured', 'Хит'], ['in_stock', 'В наличии']].map(([key, label]) => (
+                    {[['is_new', 'Новинка'], ['is_featured', 'Хит'], ['in_stock', 'В наличии'], ['is_hidden', 'Скрыт с сайта']].map(([key, label]) => (
                       <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
                         <input type="checkbox" checked={form[key as keyof typeof form] as boolean} onChange={e => setForm(f => ({ ...f, [key]: e.target.checked }))} />
                         {label}

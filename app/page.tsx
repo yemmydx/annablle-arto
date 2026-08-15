@@ -12,7 +12,7 @@ export default async function HomePage() {
     .from('products')
     .select(SELECT)
     .eq('in_stock', true)
-    .eq('is_featured', true)
+    .eq('is_featured', true).eq('is_hidden', false)
     .order('created_at', { ascending: false })
     .limit(8)
 
@@ -31,7 +31,7 @@ export default async function HomePage() {
     .from('products')
     .select(SELECT)
     .eq('in_stock', true)
-    .eq('is_new', true)
+    .eq('is_new', true).eq('is_hidden', false)
     .order('created_at', { ascending: false })
     .limit(8)
 

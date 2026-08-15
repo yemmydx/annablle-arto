@@ -42,6 +42,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
     .from('products')
     .select('*, categories(*), product_variants(*)')
     .eq('in_stock', true)
+    .eq('is_hidden', false)
     .not('images', 'is', null)
     .not('images', 'eq', '{}')
     .order('created_at', { ascending: false }) as any
