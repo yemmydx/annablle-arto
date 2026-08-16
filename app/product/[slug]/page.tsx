@@ -25,16 +25,21 @@ export default async function ProductPage({
     .eq('product_id', product.id)
     .order('sort_order', { ascending: true })
 
-  // Товары из той же коллекции (если у товара указана коллекция)
+  // Товары той же коллекции — по префиксу артикула ("8189-057 ..." -> "8189-")
   let collectionProducts: any[] = []
-  if (product.collection) {
+  const artMatch = (product.name || '').match(/^(\d{3,4})-/)
+  const collPrefix = artMatch ? artMatch[1] + '-' : null
+  if (collPrefix) {
     const { data } = await supabase
       .from('products')
       .select('*, categories(*), product_variants(*)')
-      .eq('collection', product.collection)
+      .ilike('name', collPrefix + '%')
       .neq('id', product.id)
       .eq('in_stock', true)
-      .limit(8)
+      .eq('is_hidden', false)
+      .not('images', 'is', null)
+      .not('images', 'eq', '{}')
+      .limit(12)
     collectionProducts = data || []
   }
 
@@ -45,6 +50,9 @@ export default async function ProductPage({
     .eq('category_id', product.category_id)
     .neq('id', product.id)
     .eq('in_stock', true)
+    .eq('is_hidden', false)
+    .not('images', 'is', null)
+    .not('images', 'eq', '{}')
     .limit(4)
 
   return (
