@@ -70,7 +70,7 @@ export default function Header() {
         </Link>
 
         <div className="nav-right" onMouseEnter={() => setOpenIndex(null)}>
-          <button className="nav-icon" title="Поиск" type="button">
+          <button className="nav-icon" title="Поиск" type="button" onClick={() => { const q = prompt('Поиск по названию или артикулу'); if (q && q.trim()) router.push('/catalog?q=' + encodeURIComponent(q.trim())) }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
             </svg>
