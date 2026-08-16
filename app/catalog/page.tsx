@@ -15,6 +15,7 @@ const SECTION_NAMES: Record<string, string> = {
 }
 
 type SP = {
+  q?: string
   section?: string       // lingerie | swim | clothes | tights | men | kids
   cat?: string           // slug категории (например, 'bra', 'panties')
   category?: string      // legacy — старое название параметра, поддерживаем для обратной совместимости
@@ -46,6 +47,8 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
     .not('images', 'is', null)
     .not('images', 'eq', '{}')
     .order('name', { ascending: true }) as any
+
+  if (searchParams.q) query = query.ilike('name', '%' + searchParams.q + '%')
 
   // Фильтр по разделу: товары относятся к категориям с section = X
   if (searchParams.section) {

@@ -1,12 +1,16 @@
 'use client'
 import { useCart } from '@/lib/cart'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import CartDrawer from './CartDrawer'
 import BrandLogo from './BrandLogo'
 import { MENU, MenuItem } from './menuData'
 
 export default function Header() {
+  const router = useRouter()
+  const [searchText, setSearchText] = useState('')
+  function doSearch() { const q = searchText.trim(); if (q) router.push('/catalog?q=' + encodeURIComponent(q)) }
   const totalItems = useCart(s => s.totalItems())
   const [mounted, setMounted] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
