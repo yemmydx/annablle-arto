@@ -10,6 +10,7 @@ import { MENU, MenuItem } from './menuData'
 export default function Header() {
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
   function doSearch() { const q = searchText.trim(); if (q) router.push('/catalog?q=' + encodeURIComponent(q)) }
   const totalItems = useCart(s => s.totalItems())
   const [mounted, setMounted] = useState(false)
@@ -70,7 +71,8 @@ export default function Header() {
         </Link>
 
         <div className="nav-right" onMouseEnter={() => setOpenIndex(null)}>
-          <button className="nav-icon" title="Поиск" type="button" onClick={() => { const q = prompt('Поиск по названию или артикулу'); if (q && q.trim()) router.push('/catalog?q=' + encodeURIComponent(q.trim())) }}>
+          <input value={searchText} onChange={(e) => setSearchText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') doSearch(); if (e.key === 'Escape') setSearchOpen(false) }} placeholder="Поиск по названию или артикулу" autoFocus={searchOpen} style={{ width: searchOpen ? 190 : 0, opacity: searchOpen ? 1 : 0, padding: searchOpen ? '4px 8px' : '4px 0', marginRight: searchOpen ? 4 : 0, border: 'none', borderBottom: searchOpen ? '1px solid var(--ink, #333)' : '1px solid transparent', background: 'transparent', fontSize: 13, fontFamily: 'inherit', outline: 'none', transition: 'width .25s ease, opacity .25s ease', pointerEvents: searchOpen ? 'auto' : 'none' }} />
+        <button className="nav-icon" title="Поиск" type="button" onClick={() => { if (searchOpen && searchText.trim()) { doSearch() } else { setSearchOpen(o => !o) } }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
             </svg>
