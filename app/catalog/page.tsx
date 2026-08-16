@@ -45,7 +45,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: SP }
     .eq('is_hidden', false)
     .not('images', 'is', null)
     .not('images', 'eq', '{}')
-    .order('created_at', { ascending: false }) as any
+    .order('name', { ascending: true }) as any
 
   // Фильтр по разделу: товары относятся к категориям с section = X
   if (searchParams.section) {

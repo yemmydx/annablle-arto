@@ -113,7 +113,7 @@ export default function CatalogClient({ products, categories, activeCategory, se
   const { addItem } = useCart()
   const [activeSizes, setActiveSizes] = useState<string[]>([])
   const [maxPrice, setMaxPrice] = useState(500000)
-  const [sort, setSort] = useState('new')
+  const [sort, setSort] = useState('article')
   const [quickProduct, setQuickProduct] = useState<Product | null>(null)
   const [cartOpen, setCartOpen] = useState(false)
   const [activeColors, setActiveColors] = useState<string[]>([])
@@ -158,6 +158,7 @@ export default function CatalogClient({ products, categories, activeCategory, se
     list = list.filter(p => p.price <= maxPrice)
     if (sort === 'price_asc') list.sort((a, b) => a.price - b.price)
     if (sort === 'price_desc') list.sort((a, b) => b.price - a.price)
+    if (sort === 'article') list.sort((a, b) => a.name.localeCompare(b.name, 'ru'))
     return list
   }, [products, activeSizes, activeColors, maxPrice, sort])
 
@@ -292,7 +293,8 @@ export default function CatalogClient({ products, categories, activeCategory, se
               background:'transparent',border:'1px solid rgba(58,40,40,0.2)',padding:'8px 14px',
               borderRadius:999,fontFamily:'inherit',fontSize:13,cursor:'pointer',outline:'none',
             }}>
-              <option value="new">Сортировка: новинки</option>
+              <option value="article">Сортировка: по артикулу</option>
+              <option value="new">Сначала новинки</option>
               <option value="price_asc">Сначала дешевле</option>
               <option value="price_desc">Сначала дороже</option>
             </select>
