@@ -264,7 +264,7 @@ export default function AboutClient() {
               {[
                 ['WhatsApp', '+7 700 123 45 67', 'https://wa.me/77001234567'],
                 ['Instagram', '@pod_platiem.official', 'https://www.instagram.com/pod_platiem.official/'],
-                ['Email', 'hello@podplatiem.kz', 'mailto:hello@podplatiem.kz'],
+                ['Email', 'podplatiem@gmail.com', 'mailto:podplatiem@gmail.com'],
               ].map(([label, val, href]) => (
                 <a key={label} href={href} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 0', borderBottom: '1px solid rgba(255,247,243,0.1)', textDecoration: 'none', color: 'var(--cream)' }}>
                   <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.5 }}>{label}</span>

@@ -18,7 +18,7 @@ export default function ContactsPage() {
       <h2>Как с нами связаться</h2>
       <ul>
         <li>Телефон / WhatsApp: <F>+7 776 699 9905</F></li>
-        <li>E-mail: <F>[hello@podplatiem.kz]</F></li>
+        <li>E-mail: <F>podplatiem@gmail.com</F></li>
       </ul>
 
       <h2>Время работы</h2>

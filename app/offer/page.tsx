@@ -54,7 +54,7 @@ export default function OfferPage() {
         <li>БИН: <F>150740013086</F></li>
         <li>Адрес: <F>г. Алматы, ул. Навои 7, корпус 2</F></li>
         <li>Телефон: <F>+7 776 699 9905</F></li>
-        <li>E-mail: <F>[hello@podplatiem.kz]</F></li>
+        <li>E-mail: <F>podplatiem@gmail.com</F></li>
       </ul>
     </LegalPage>
   )
