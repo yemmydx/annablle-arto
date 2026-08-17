@@ -63,6 +63,14 @@ export default function ReturnsPage() {
         Денежные средства возвращаются тем же способом, которым была произведена оплата,
         в течение <b>10 рабочих дней</b> после принятия товара.
       </p>
+      <h2>Реквизиты продавца</h2>
+      <ul>
+        <li>Наименование: <strong>ТОО «Anabel Arto Lingerie»</strong></li>
+        <li>БИН: <strong>150740013086</strong></li>
+        <li>Адрес: <strong>г. Алматы, ул. Навои 7, корпус 2</strong></li>
+        <li>Телефон / WhatsApp: <strong>+7 776 699 9905</strong></li>
+      </ul>
+
     </LegalPage>
   )
 }
