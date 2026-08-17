@@ -50,10 +50,10 @@ export default function OfferPage() {
 
       <h2>11. Реквизиты продавца</h2>
       <ul>
-        <li>Наименование: <F>[ИП / ТОО «___»]</F></li>
+        <li>Наименование: <F>ТОО «Anabel Arto Lingerie»</F></li>
         <li>БИН / ИИН: <F>[___________]</F></li>
-        <li>Адрес: <F>[город, улица, дом]</F></li>
-        <li>Телефон: <F>[+7 ___ ___ __ __]</F></li>
+        <li>Адрес: <F>г. Алматы, ул. Навои 7, корпус 2</F></li>
+        <li>Телефон: <F>+7 776 699 9905</F></li>
         <li>E-mail: <F>[hello@podplatiem.kz]</F></li>
       </ul>
     </LegalPage>
