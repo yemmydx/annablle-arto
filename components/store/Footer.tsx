@@ -42,6 +42,7 @@ export default function Footer() {
       </div>
       <div className="footer-bottom">
         <span>© 2026 POD PLATIEM</span>
+        <span style={{ fontSize: 11, opacity: 0.6, lineHeight: 1.6 }}>ТОО «Anabel Arto Lingerie» · БИН 150740013086 · г. Алматы, ул. Навои 7, корп. 2 · +7 776 699 9905</span>
         <span>КАЗАХСТАН · БЕЛЬЁ С ЛЮБОВЬЮ</span>
         <span>KZ · ₸</span>
       </div>

@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
 :root{
   --bg:#fbe9e3;--bg-2:#f5d9d0;--bg-3:#fdf2ee;
@@ -27,7 +27,7 @@ html,body{background:var(--bg);color:var(--ink);font-family:'Inter Tight',-apple
 .marquee{background:var(--ink);color:var(--cream);padding:9px 0;overflow:hidden;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;}
 .marquee-track{display:inline-block;animation:scroll 35s linear infinite;}
 .marquee span{padding:0 28px;}
-.marquee span::after{content:'âœ¶';margin-left:28px;opacity:0.5;}
+.marquee span::after{content:'•';margin-left:28px;opacity:0.5;}
 @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 .hero{position:relative;padding:24px 24px 28px;}

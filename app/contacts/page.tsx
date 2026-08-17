@@ -11,7 +11,7 @@ export default function ContactsPage() {
       <h2>Реквизиты продавца</h2>
       <ul>
         <li>Наименование: <F>ТОО «Anabel Arto Lingerie»</F></li>
-        <li>БИН / ИИН: <F>[___________]</F></li>
+        <li>БИН: <F>150740013086</F></li>
         <li>Юридический адрес: <F>г. Алматы, ул. Навои 7, корпус 2</F></li>
       </ul>
 
