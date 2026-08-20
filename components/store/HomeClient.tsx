@@ -26,8 +26,8 @@ const CATS = [
 
 const PROMISE = [
   { icon: '🚚', title: 'Бесплатная доставка', sub: 'от 15 000 ₸' },
-  { icon: '↩️', title: 'Лёгкий обмен', sub: '30 дней' },
-  { icon: '💳', title: 'Kaspi Pay', sub: 'Halyk · Visa · MC' },
+  { icon: '↩️', title: 'Лёгкий обмен', sub: '14 рабочих дней' },
+  { icon: '💳', title: 'Оплата картой', sub: 'Visa · Mastercard' },
   { icon: '✦', title: 'Размеры XS–3XL', sub: 'для всех' },
 ]
 

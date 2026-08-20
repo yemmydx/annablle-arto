@@ -7,10 +7,10 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://podplatiem.com'),
   verification: { google: 'iAobtB07L6xt5GasPfduNv2v7LqHG63L9VExtgGlH8I' },
   title: 'POD PLATIEM — Женское бельё в Казахстане',
-  description: 'Изысканное женское бельё с доставкой по всему Казахстану. Оплата Kaspi Pay, Halyk, картой.',
+  description: 'Изысканное женское бельё с доставкой по всему Казахстану. Оплата банковской картой Visa, Mastercard.',
   openGraph: {
     title: 'POD PLATIEM — Женское бельё в Казахстане',
-    description: 'Изысканное женское бельё с доставкой по всему Казахстану. Оплата Kaspi Pay, Halyk, картой.',
+    description: 'Изысканное женское бельё с доставкой по всему Казахстану. Оплата банковской картой Visa, Mastercard.',
     url: 'https://podplatiem.com',
     siteName: 'POD PLATIEM',
     locale: 'ru_RU',

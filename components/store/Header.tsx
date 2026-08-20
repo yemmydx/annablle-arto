@@ -93,8 +93,8 @@ export default function Header() {
 
       <div className="marquee" onMouseEnter={() => setOpenIndex(null)}>
         <div className="marquee-track">
-          {['Доставка по всему Казахстану','Kaspi Pay · Halyk Bank · Visa / MC','Возврат 14 рабочих дней','Размеры XS – 3XL','Новая коллекция 2025',
-            'Доставка по всему Казахстану','Kaspi Pay · Halyk Bank · Visa / MC','Возврат 14 рабочих дней','Размеры XS – 3XL','Новая коллекция 2025',
+          {['Доставка по всему Казахстану','Оплата картой Visa / Mastercard','Возврат 14 рабочих дней','Размеры XS – 3XL','Новая коллекция 2025',
+            'Доставка по всему Казахстану','Оплата картой Visa / Mastercard','Возврат 14 рабочих дней','Размеры XS – 3XL','Новая коллекция 2025',
           ].map((t,i) => <span key={i}>{t}</span>)}
         </div>
       </div>

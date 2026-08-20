@@ -136,7 +136,7 @@ export default function CartPage() {
 
               {/* Платёжки */}
               <div className="flex gap-1 flex-wrap justify-center mt-6">
-                {['Kaspi Pay', 'Halyk', 'Visa', 'MC'].map(p => (
+                {['Visa', 'MC'].map(p => (
                   <span key={p} className="text-[9px] border border-stone-200 text-stone-400 px-2 py-0.5">{p}</span>
                 ))}
               </div>
