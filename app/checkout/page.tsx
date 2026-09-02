@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Header from '@/components/store/Header'
 import Footer from '@/components/store/Footer'
 import { useCart } from '@/lib/cart'
-import { formatPrice, DELIVERY_METHODS, PAYMENT_METHODS, KZ_CITIES, optimizeImage } from '@/lib/utils'
+import { formatPrice, DELIVERY_METHODS, KZ_CITIES, optimizeImage } from '@/lib/utils'
 
 const FREE_SHIP = 15000
 const SHIP_COST = 1500
@@ -26,9 +26,8 @@ const legendStyle: React.CSSProperties = {
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, totalPrice, clearCart } = useCart()
+  const { items, totalPrice } = useCart()
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
   const [form, setForm] = useState({
     customer_name: '',
     customer_phone: '',
@@ -36,7 +35,7 @@ export default function CheckoutPage() {
     city: 'Алматы',
     address: '',
     delivery_method: 'courier',
-    payment_method: 'kaspi',
+    payment_method: 'card',
     notes: '',
   })
 
@@ -51,58 +50,50 @@ export default function CheckoutPage() {
     e.preventDefault()
     setLoading(true)
 
-    const res = await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        total_amount: totalPrice(),
-        items: items.map(i => ({
-          product_id: i.product.id,
-          product_name: i.product.name,
-          size: i.size,
-          color: i.color,
-          qty: i.qty,
-          price: i.product.price,
-        })),
-      }),
-    })
+    try {
+      // 1. Создаём заказ (сумма — с учётом доставки).
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          total_amount: subtotal + shipping,
+          items: items.map(i => ({
+            product_id: i.product.id,
+            product_name: i.product.name,
+            size: i.size,
+            color: i.color,
+            qty: i.qty,
+            price: i.product.price,
+          })),
+        }),
+      })
 
-    setLoading(false)
+      if (!res.ok) throw new Error('order')
+      const order = await res.json()
 
-    if (res.ok) {
-      clearCart()
-      setSuccess(true)
-    } else {
-      alert('Не удалось оформить заказ. Попробуйте ещё раз или напишите нам.')
+      // 2. Получаем платёжную ссылку Robokassa и уходим на оплату.
+      const pay = await fetch('/api/payment/robokassa/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: order.order_id }),
+      })
+
+      if (!pay.ok) throw new Error('payment')
+      const { url } = await pay.json()
+      if (!url) throw new Error('payment')
+
+      // Корзину не чистим здесь — очистится на странице успешной оплаты.
+      window.location.href = url
+    } catch (err) {
+      setLoading(false)
+      alert('Не удалось перейти к оплате. Попробуйте ещё раз или напишите нам — заказ мог сохраниться.')
     }
   }
 
-  if (items.length === 0 && !success) {
+  if (items.length === 0) {
     router.push('/cart')
     return null
-  }
-
-  if (success) {
-    return (
-      <main>
-        <Header />
-        <div style={{ maxWidth: 560, margin: '0 auto', padding: '100px 24px', textAlign: 'center' }}>
-          <div style={{ width: 72, height: 72, borderRadius: 999, background: 'var(--rose)', display: 'grid', placeItems: 'center', margin: '0 auto 24px', fontSize: 32, color: 'var(--ink)' }}>✓</div>
-          <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 40, lineHeight: 1.1, marginBottom: 16 }}>
-            Заказ <em style={{ fontStyle: 'italic', color: 'var(--rose-deep)' }}>оформлен!</em>
-          </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: 14, lineHeight: 1.6, marginBottom: 32 }}>
-            Спасибо за покупку! Мы свяжемся с вами в ближайшее время для подтверждения заказа и уточнения деталей доставки.
-          </p>
-          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '16px 32px', borderRadius: 999, background: 'var(--ink)', color: 'var(--cream)', textDecoration: 'none', fontSize: 13, letterSpacing: '0.04em' }}>
-            На главную
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </Link>
-        </div>
-        <Footer />
-      </main>
-    )
   }
 
   return (
@@ -165,21 +156,19 @@ export default function CheckoutPage() {
               {/* Оплата */}
               <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
                 <legend style={legendStyle}>Оплата</legend>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  {PAYMENT_METHODS.map(m => {
-                    const active = form.payment_method === m.value
-                    return (
-                      <label key={m.value} style={{
-                        display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px',
-                        borderRadius: 12, cursor: 'pointer', transition: 'all .2s',
-                        border: `1px solid ${active ? 'var(--ink)' : 'var(--line)'}`,
-                        background: active ? 'rgba(255,247,243,0.7)' : 'transparent',
-                      }}>
-                        <input type="radio" name="payment_method" value={m.value} checked={active} onChange={handleChange} style={{ accentColor: 'var(--ink)' }} />
-                        <span style={{ fontSize: 13, color: 'var(--ink)' }}>{m.label}</span>
-                      </label>
-                    )
-                  })}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px',
+                  borderRadius: 12, border: '1px solid var(--line)', background: 'rgba(255,247,243,0.6)',
+                }}>
+                  <div style={{ fontSize: 24, lineHeight: 1 }}>💳</div>
+                  <div>
+                    <div style={{ fontSize: 13, color: 'var(--ink)', marginBottom: 3 }}>
+                      Оплата картой онлайн — Visa, Mastercard
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--ink-soft)', lineHeight: 1.5 }}>
+                      После подтверждения вы перейдёте на защищённую страницу платёжного провайдера Robokassa.
+                    </div>
+                  </div>
                 </div>
               </fieldset>
 
@@ -236,7 +225,7 @@ export default function CheckoutPage() {
                   letterSpacing: '0.04em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
                   opacity: loading ? 0.6 : 1, transition: 'opacity .2s',
                 }}>
-                  {loading ? 'Оформляем...' : 'Подтвердить заказ'}
+                  {loading ? 'Переходим к оплате...' : 'Перейти к оплате'}
                   {!loading && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>}
                 </button>
 

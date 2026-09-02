@@ -41,12 +41,9 @@ export const DELIVERY_METHODS = [
   { value: 'pickup', label: 'Самовывоз' },
 ]
 
-// Методы оплаты
+// Методы оплаты (онлайн-оплата картой через Robokassa)
 export const PAYMENT_METHODS = [
-  { value: 'kaspi', label: 'Kaspi Pay' },
-  { value: 'halyk', label: 'Halyk Bank' },
   { value: 'card', label: 'Visa / Mastercard' },
-  { value: 'cash', label: 'Наличные при получении' },
 ]
 
 // Города Казахстана

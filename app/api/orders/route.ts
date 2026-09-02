@@ -27,7 +27,12 @@ export async function POST(req: NextRequest) {
 
     if (itemsError) throw itemsError
 
-    return NextResponse.json({ success: true, order_number: order.order_number })
+    return NextResponse.json({
+      success: true,
+      order_id: order.id,
+      order_number: order.order_number,
+      total_amount: order.total_amount,
+    })
   } catch (error) {
     console.error('Order error:', error)
     return NextResponse.json({ error: 'Ошибка создания заказа' }, { status: 500 })
